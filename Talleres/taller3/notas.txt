@@ -1,0 +1,30 @@
+Ejercicio 1
+
+a) Entendemos que el termino "convencion de llamadas" se refiere a la forma en la que el programador va a utilizar una funcion para enviar y recibir informacion. 
+
+    Lo principal es saber como los argumentos son pasados a dicha funcion, y como son retornados. 
+    Para esto tambien debemos conocer tipos de datos, alineacion, etc.
+
+    Para 64 bits, la convencion de llamadas utiliza registros de proposito general (unos 15 registros aprox) y 
+    la pila (cuando ya no quedan registros disponibles), mientras que para 32 bits solo utiliza pila. 
+
+    En x86-64 Linux se denomina System V AMD64 ABI
+
+
+b) El programador
+
+
+c) Un stack frame es la region de la pila comprendida entre los parametros recibidos y el tope de pila actual. O sea, durante la ejecucion de nuestro programa, cada nueva funcion llamada definirá un nuevo stack frame, que desaparecerá cuando esta finalice.
+
+    Se le llama prólogo a la parte del codigo en la que reservamos el espacio en la pila para datos temporales (definiendo el stack frame), se agrega el padding necesario para la alineacion, y se preserva los valores de los registros no volatiles.
+
+    Se le llama epilogo a la parte en la que se restauran los valores de los registros no volatiles y devolvemos la pila a su estado inicial.
+
+
+d) Se hace PUSH RBP, luego en el RBP se guarda el RSP y se decrementa el RSP para el padding, y es a partir de este momento en el que se guardaran los datos temporales
+
+
+e) Antes de realizar una llamada a una funcion, la pila debe estar alineada a 16 bytes ¿?
+
+
+f)  
