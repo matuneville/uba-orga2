@@ -38,9 +38,10 @@ int main (void){
 
 	double r = 13;
 	double* res = &r;
+	asser(alternate_sum_4(x1,x2,x3,x4) == 25);
 	product_9_f(res, x1, f1, x2, f2, x3, f3, x4, f4, x5, f5, x6, f6, x7, f7, x8, f8, x9, f9);
 
-	printf("%f \n", *res);
+	printf("%lf \n", *res);
 	return 0;    
 } 
 

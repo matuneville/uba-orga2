@@ -13,6 +13,7 @@ global alternate_sum_4_simplified
 global alternate_sum_8
 global product_2_f
 global alternate_sum_4_using_c
+global product_9_f
 
 ;########### DEFINICION DE FUNCIONES
 ; uint32_t alternate_sum_4(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4);
@@ -116,8 +117,9 @@ product_2_f:
     ; multiplicamos xmm0 (f1) por xmm1 (x1 convertido en float)
     mulss   	xmm1, xmm0
     
-    ; guardo en rsi el resultado convertido a uint
-    cvttss2si 	rsi, xmm1 ; la doble t es para truncar decimales
+    ; guardo en rsi el resultado convertido a uint no hay que truncar, probalo asi nomas
+	roundss  	xmm1, xmm1, 2
+	cvttss2si 	rsi, xmm1 ; la doble t es para truncar decimales
 	mov [rdi], rsi
 
     ; Epilogo
@@ -136,9 +138,6 @@ product_9_f:
 	;prologo
 	push 	rbp
 	mov 	rbp, rsp
-	
-	;sub rsp, 0x30
-
 	;convertimos los flotantes de cada registro xmm en doubles
 	cvtss2sd 	xmm0, xmm0
 	cvtss2sd 	xmm1, xmm1
@@ -163,8 +162,6 @@ product_9_f:
 	mulsd		xmm0, xmm7
 
 	cvtss2sd	xmm1, [rbp+0x30]
-
-	cvtss2sd	xmm1,xmm1
 	mulsd		xmm0, xmm1
 
 	; convertimos los enteros en doubles y los multiplicamos por xmm0.
@@ -194,8 +191,5 @@ product_9_f:
 	
 	movsd		[rdi], xmm0
 	; epilogo
-	
-	;add rsp, 0x30
-	
 	pop rbp
 	ret
