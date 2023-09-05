@@ -77,32 +77,36 @@ strClone:
 	push 	rbp
 	mov 	rbp, rsp
 
+	; me guardo el puntero del string a copiar
 	push rdi
 	
 	; tengo que calcular el largo del string
 	call strLen
-	
+
+	; muevo a rdi el largo del string
 	mov rdi, rax
+
 	inc rdi
-	; reservo memoria con malloc de C igual al largo del string
+	; reservo memoria con malloc de C igual al largo del string+1
 	
 	call malloc 
 	; ahora rax apunta a la memoria reservada
-	
+
+	mov rcx, rax ; para tener puntero al primero
+
 	pop rdi ; recupero mi string
 	
 	loop2:
-		mov		cl, [rdi]
-		mov     rax, cl
-		cmp 	rdi, 0
+		mov		dl, [rdi]
+		mov     [rax], dl
+		cmp 	dl, 0
 		jz 		end1
 		inc		rax
 		inc		rdi
 		jmp 	loop2
 	
 	end1:
-		inc rax
-		mov [rax], 0
+		mov rax, rcx ; restauro puntero al primer char del string nuevo
 		pop	rbp
 		ret
 
@@ -110,6 +114,12 @@ strClone:
 
 ; void strDelete(char* a)
 strDelete:
+	push rbp
+	mov rbp, rsp
+
+	call free
+	
+	pop rbp
 	ret
 	
 
