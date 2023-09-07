@@ -109,7 +109,7 @@ strClone:
 		mov rax, rcx ; restauro puntero al primer char del string nuevo
 		pop	rbp
 		ret
-
+ 
 
 
 ; void strDelete(char* a)
@@ -131,7 +131,7 @@ strLen:
     xor rax, rax
 
     loop3:
-        mov cl, [rdi]  ; PREGUNTAR POR QUE SOLO FUNCIONA CON ESTO
+        mov cl, [rdi]  
         cmp cl, 0
         je end2
 

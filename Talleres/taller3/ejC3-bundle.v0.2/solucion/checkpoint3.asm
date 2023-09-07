@@ -48,7 +48,7 @@ cantidad_total_de_elementos:
 		test rdi, rdi ; compara rdi consigo mismo y verifica si es 0 para ver si es NULL
 		jz  .end
 		
-		add rax, [rdi + LONGITUD_OFFSET]
+		add eax, [rdi + LONGITUD_OFFSET]
 
 		mov	 rdi, [rdi]
 		jmp .loop
@@ -72,7 +72,7 @@ cantidad_total_de_elementos_packed:
 		test rdi, rdi ; compara rdi consigo mismo y verifica si es 0 para ver si es NULL
 		jz  .end
 		
-		add rax, [rdi + PACKED_LONGITUD_OFFSET]
+		add eax, [rdi + PACKED_LONGITUD_OFFSET]
 
 		mov	 rdi, [rdi]
 		jmp .loop
