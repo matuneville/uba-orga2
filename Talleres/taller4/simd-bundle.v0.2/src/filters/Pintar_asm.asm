@@ -13,25 +13,101 @@ Pintar_asm:
 	mov rbp, rsp
 
 	push rbx ; usamos para offset
-	xor rbp, rbp
+	xor rbx, rbx
 
-	movdqu xmm1, 0xFF000000 ; pixel negro, hay que ponerlo en .rodata POR 4 VECES PARA LLENAR DE 4 PIXELES NEGROS
-	modqu  xmm2, 0xFFFFFFFF ; pixel blanco, hay que ponerlo en .rodata
+	push r12 ; los usamos para tener height y width y no perderlos
+	push r13
+	push r14 ; guardo rsi para no perder
+	push r15 ; contador de linea
+	
+	xor r15, r15
 
-	fila_superior:
-		cmp rbx, rdx
-		je fin_fila_sup
+	mov r12, rdx ; width
+	mov r13, rcx ; height
+	mov r14, rsi ; destino
 
-		; cargo pixel negro a dst
-		movdqu [dst+rbx], xmm1
+	movdqu  xmm1, 0x000000FF000000FF000000FF000000FF ; pixel negro
+	movdqu  xmm2, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF ; pixel blanco
+	movdqu	xmm3, 0x000000FF000000FFFFFFFFFFFFFFFFFF ; pixel negro-blanco
+	movdqu  xmm4, 0xFFFFFFFFFFFFFFFF000000FF000000FF ; pixel blanco-negro
 
+	; PSEUDOCODIGO
+	; while height > 0{
+
+	;    if (linea 1 o 0 or linea height or height-1)
+	;		pintamos todo negro
+	;	 
+	;	 else 
+	;		if (columna 0 o 1)
+	;			pinto negro-blanco
+	;		else if(columna width o width-1)
+	;			pinto blanco-negro
+	;		else
+	;			pinto todo blanco
+	;}	
+	
+	ciclo:
+		cmp r13, 0 
+		je end
+
+		; if linea 0 o 1
+		cmp r15, 0
+	 	je pinto_fila_negro
+		cmp r15, 1
+		je pinto_fila_negro
+
+		; pinto izquierda o derecha de negro-blanco o blanco-negro
+		cmp rbx, 0
+		je pinto_primera_negro ; aca el rbx no hay que retornarlo a 0, asi sigue en la misma, ok?
+		cmp rbx, r12 - 16 ;
+		je pinto_ultimacolum_negro
+		cmp r15, rcx - 2
+		jge pinto_ultima_negro 
 		
+		movdqu [rsi+rbx], xmm2
+		add		rbx, 16
+		jmp 	ciclo
 		
-		; lo movemos a [rsi]
 
+	
+	pinto_fila_negro:
+		cmp rbx, width*4  ; evaluar usar un contador de columna en vez de usar el offset, es un bolonqui sino
+		jne sigo                 
 
+		xor rbp, rbp
+		dec r13
+		inc r15
+		jmp ciclo
+			
+		sigo:
+		movdqu [rsi+rbx], xmm1
+		add rbx, 16
+		jmp pinto_fila_negro
+	
+	end:
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
 	pop rbp
 	ret
 	
 
+
+;⢀⡴⠑⡄⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠸⡇⠀⠿⡀⠀⠀⠀⣀⡴⢿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠑⢄⣠⠾⠁⣀⣄⡈⠙⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⢀⡀⠁⠀⠀⠈⠙⠛⠂⠈⣿⣿⣿⣿⣿⠿⡿⢿⣆⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⢀⡾⣁⣀⠀⠴⠂⠙⣗⡀⠀⢻⣿⣿⠭⢤⣴⣦⣤⣹⠀⠀⠀⢀⢴⣶⣆ 
+;⠀⠀⢀⣾⣿⣿⣿⣷⣮⣽⣾⣿⣥⣴⣿⣿⡿⢂⠔⢚⡿⢿⣿⣦⣴⣾⠁⠸⣼⡿ 
+;⠀⢀⡞⠁⠙⠻⠿⠟⠉⠀⠛⢹⣿⣿⣿⣿⣿⣌⢤⣼⣿⣾⣿⡟⠉⠀⠀⠀⠀⠀ 
+;⠀⣾⣷⣶⠇⠀⠀⣤⣄⣀⡀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠉⠈⠉⠀⠀⢦⡈⢻⣿⣿⣿⣶⣶⣶⣶⣤⣽⡹⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠉⠲⣽⡻⢿⣿⣿⣿⣿⣿⣿⣷⣜⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣶⣮⣭⣽⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⣀⣀⣈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠻⠿⠿⠿⠿⠛⠉
 
