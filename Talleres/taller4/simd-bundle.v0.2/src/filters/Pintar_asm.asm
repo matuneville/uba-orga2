@@ -1,3 +1,16 @@
+section .rodata
+	.align 16  # Alinea la sección a 16 bytes (tamaño de un registro XMM)
+
+	color_negro: .quad 0x000000FF000000FF000000FF000000FF
+
+	color_blanco: .quad 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+	color_negro_blanco: .quad 0x000000FF000000FFFFFFFFFFFFFFFFFF
+
+	color_blanco_negro: .quad 0xFFFFFFFFFFFFFFFF000000FF000000FF
+
+
+
 global Pintar_asm
 
 ;void Pintar_asm(unsigned char *src, 	[RDI]     
@@ -11,24 +24,24 @@ Pintar_asm:
 	push rbp
 	mov rbp, rsp
 
-	push rbx ; usamos para offset
+	push rbx ; usamos RBX para offset de columna
 	xor rbx, rbx
 
-	push r12 ; los usamos para tener height y width y no perderlos
-	push r13
-	push r14 ; guardo rsi para no perder
-	push r15 ; contador de linea
+	push r12 ; R12 va a guardar width*4
+	push r13 ; guardo RSI para no perder el primer PIXEL del destino
+	push r14 ; contador de linea
 	
-	xor r15, r15
 
-	mov r12, rdx ; width
-	mov r13, rcx ; height
-	mov r14, rsi ; destino
+	; inicializo las variables
+	mov r12, rdx
+	mul r12, 4
+	mov r13, rsi
+	xor r14, r14
 
-	movdqu  xmm1, 0x000000FF000000FF000000FF000000FF ; pixel negro
-	movdqu  xmm2, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF ; pixel blanco
-	movdqu	xmm3, 0x000000FF000000FFFFFFFFFFFFFFFFFF ; pixel negro-blanco
-	movdqu  xmm4, 0xFFFFFFFFFFFFFFFF000000FF000000FF ; pixel blanco-negro
+	movdqa  xmm1, [color_negro] ; pixel negro
+	movdqa  xmm2, [color_blanco] ; pixel blanco
+	movdqa	xmm3, [color_negro_blanco]; pixel negro-blanco
+	movdqa  xmm4, [color_blanco_negro] ; pixel blanco-negro
 
 	; PSEUDOCODIGO
 	; while height > 0{
@@ -46,43 +59,51 @@ Pintar_asm:
 	;}	
 	
 	ciclo:
-		cmp r13, 0 
+		; si ya pasamos la ultima linea, termina
+		cmp r14, rcx
 		je end
 
 		; if linea 0 o 1
-		cmp r15, 1
+		cmp r14, 1
 		jle pinto_fila_negro
 
-		; pinto izquierda o derecha de negro-blanco o blanco-negro
+		; if linea h-2 o h-1, o sea ultimas dos
+		cmp r14, rcx - 2
+		jge pinto_fila_negro
+
+		; pinto izquierda de negro-blanco
 		cmp rbx, 0
 		je pinto_prim_col_negro ; aca el rbx no hay que retornarlo a 0, asi sigue en la misma, ok?
 
+		; pinto derecha de blanco-negro
 		cmp rbx, r12 - 16 ;
 		je pinto_ult_col_negro
 
-		cmp r15, rcx - 2
-		jge pinto_fila_negro
 		
-		movdqu [rsi+rbx], xmm2
-		add		rbx, 16
-		jmp 	ciclo
+	end:
+		pop r14
+		pop r13
+		pop r12
+		pop rbx
+		pop rbp
+		ret
 		
 
 	
 	pinto_fila_negro:
-		cmp rbx, width*4  ; evaluar usar un contador de columna en vez de usar el offset, es un bolonqui sino
-		jne sigo                 
+		cmp rbx, r12
+		jne sigo ; si no termine linea, pinto de negro
 
-		xor rbp, rbp
-		dec r13
-		inc r15
-        add rsi, r9
+		xor rbx, rbx
+		inc r14 ; voy a sgte linea con contador
+        add rsi, r9 ; apunto a sgte fila destino
 		jmp ciclo
 			
 		sigo:
 		movdqu [rsi+rbx], xmm1
 		add rbx, 16
 		jmp pinto_fila_negro
+
 
 	pinto_prim_col_negro:
         movdqu [rsi+rbx], xmm3
@@ -91,21 +112,11 @@ Pintar_asm:
 
     pinto_ult_col_negro:
         movdqu [rsi+rbx], xmm4
-        xor     rbx, rbx
-        dec     r13
-        inc     r15
+        xor     rbx, rbx ; lo llevo a 0 de vuelta
+        inc     r14
         add     rsi, r9
         jmp ciclo
 		
-	end:
-
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop rbp
-	ret
-	
 
 
 ;⢀⡴⠑⡄⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
