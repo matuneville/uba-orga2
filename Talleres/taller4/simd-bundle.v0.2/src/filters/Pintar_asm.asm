@@ -1,3 +1,5 @@
+global Pintar_asm
+
 section .rodata
 	.align 16  # Alinea la sección a 16 bytes (tamaño de un registro XMM)
 
@@ -8,10 +10,6 @@ section .rodata
 	color_negro_blanco: .quad 0x000000FF000000FFFFFFFFFFFFFFFFFF
 
 	color_blanco_negro: .quad 0xFFFFFFFFFFFFFFFF000000FF000000FF
-
-
-
-global Pintar_asm
 
 ;void Pintar_asm(unsigned char *src, 	[RDI]     
 ;              unsigned char *dst,		[RSI]
@@ -28,7 +26,7 @@ Pintar_asm:
 	xor rbx, rbx
 
 	push r12 ; R12 va a guardar width*4
-	push r13 ; guardo RSI para no perder el primer PIXEL del destino
+	push r13 ; guardo RSI para no perder el primer PIXEL del destino REVISAR SI SE PUEDE SACAR
 	push r14 ; contador de linea
 	
 
