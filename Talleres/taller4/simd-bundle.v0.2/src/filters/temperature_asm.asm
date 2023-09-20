@@ -119,9 +119,7 @@ apply_fun_l_32:
     imul eax, 4
     add eax, 128 
     add r15d, eax; blue
-    shl r15d, 8 
 
-    add r15d, 0xFF ; transparencia
     
     mov [rsi+rbx],r15d ; paso al destino el color final
     inc rbx
