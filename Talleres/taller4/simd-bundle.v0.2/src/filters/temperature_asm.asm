@@ -71,8 +71,8 @@ temperature_asm:
 
 
     ciclo_fun:
-        movd eax, xmm1 ; traigo 32 bits de la t
-        psrld xmm1, 4 ; shifteo la sgte t
+        movd eax, xmm0 ; traigo 32 bits de la t
+        psrld xmm0, 4 ; shifteo la sgte t
 
         cmp r14, 0
         je ciclo
@@ -110,17 +110,18 @@ apply_fun_l_32:
     xor r15, r15
 
     add r15d, 0xFF ; transparencia
-    shl r15d, 1
+    shl r15d, 8
 
+    shl r15d, 8 ; red
+
+    shl r15d, 8 ;green
+    
     imul eax, 4
-
-    add ax, 128 
+    add eax, 128 
     add r15d, eax; blue
-    shl r15d, 1 
+    shl r15d, 8 
 
-    shl r15d, 1 ;green
-
-    shl r15d, 1 ; red
+    add r15d, 0xFF ; transparencia
     
     mov [rsi+rbx],r15d ; paso al destino el color final
     inc rbx
@@ -130,16 +131,16 @@ apply_fun_l_96:
     xor r15, r15
 
     add r15d, 0xFF ; transparencia
-    shl r15d, 1
-    
-    add r15d, 255 ; blue
-    shl r15d, 1
+    shl r15d, 8
+
+    shl r15d, 8 ; red
 
     sub eax, 32
     imul eax, 4 ; green
-    shl r15d, 1
-
-    shl r15d, 1 ; red
+    shl r15d, 8
+    
+    add r15d, 255 ; blue
+    
 
     mov [rsi+rbx],r15d
     inc rbx
@@ -150,18 +151,20 @@ apply_fun_l_160:
     xor r15, r15
 
     add r15d, 0xFF ; transparencia
-    shl r15d, 1
+    shl r15d, 8
 
-    add r15d, 255
     sub eax, 96
     imul eax, 4
-    sub r15d, eax
-    shl r15d, 1 ; blue
+    add r15d, eax
+    shl r15d, 8 ; red
+
 
     add r15d, 255 ; green
-    shl r15d, 1
+    shl r15d, 8
 
-    add r15d, eax
+
+    add r15d, 255 ; blue
+    sub r15d, eax
 
     mov [rsi+rbx],r15d
     inc rbx
@@ -171,17 +174,18 @@ apply_fun_l_224:
     xor r15, r15
 
     add r15d, 0xFF ; transparencia
-    shl r15d, 1
+    shl r15d, 8
 
-    shl r15d, 1 ; blue
+    add r15d, 255 ; red
+    shl r15d, 8
 
     sub eax, 160
     imul eax, 4
     add r15d, 255
     sub r15d, eax ; green
-    shl r15d, 1
+    shl r15d, 8
 
-    add r15d, 255 ; red
+    shl r15d, 8 ; blue
 
     mov [rsi+rbx],r15d
     inc rbx
@@ -191,17 +195,18 @@ apply_fun_h_224:
     xor r15, r15
 
     add r15d, 0xFF ; transparencia
-    shl r15d, 1
-
-    shl r15d, 1 ; blue
-                 
-    shl r15d, 1 ; green
+    shl r15d, 8
 
     add r15d, 255 
     sub eax, 224
     imul eax, 4 
     sub r15d, eax ; red
+    shl r15d, 8
+
+    shl r15d, 8 ; green
+
+    shl r15d, 8 ; blue
 
     mov [rsi+rbx],r15d
     inc rbx
-    jmp ciclo_fun⠀⠀⠀ 
+    jmp ciclo_fun
