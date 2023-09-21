@@ -72,7 +72,7 @@ temperature_asm:
 
     ciclo_fun:
         movd eax, xmm0 ; traigo 32 bits de la t
-        psrld xmm0, 4 ; shifteo la sgte t
+        psrldq xmm0, 4 ; shifteo la sgte t 
 
         cmp r14, 0
         je ciclo
@@ -122,7 +122,7 @@ apply_fun_l_32:
 
     
     mov [rsi+rbx],r15d ; paso al destino el color final
-    inc rbx
+    add rbx, 4
     jmp ciclo_fun
     
 apply_fun_l_96:
@@ -135,13 +135,14 @@ apply_fun_l_96:
 
     sub eax, 32
     imul eax, 4 ; green
+    add r15d, eax 
     shl r15d, 8
     
     add r15d, 255 ; blue
     
 
     mov [rsi+rbx],r15d
-    inc rbx
+    add rbx, 4
     jmp ciclo_fun
 
 
@@ -165,7 +166,7 @@ apply_fun_l_160:
     sub r15d, eax
 
     mov [rsi+rbx],r15d
-    inc rbx
+    add rbx, 4
     jmp ciclo_fun
 
 apply_fun_l_224: 
@@ -183,10 +184,10 @@ apply_fun_l_224:
     sub r15d, eax ; green
     shl r15d, 8
 
-    shl r15d, 8 ; blue
+    ;shl r15d, 8 ; blue
 
     mov [rsi+rbx],r15d
-    inc rbx
+    add rbx, 4
     jmp ciclo_fun
 
 apply_fun_h_224:
@@ -203,8 +204,27 @@ apply_fun_h_224:
 
     shl r15d, 8 ; green
 
-    shl r15d, 8 ; blue
+    ;shl r15d, 8 ; blue
 
     mov [rsi+rbx],r15d
-    inc rbx
+    add rbx, 4
     jmp ciclo_fun
+
+
+
+
+;⢀⡴⠑⡄⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠸⡇⠀⠿⡀⠀⠀⠀⣀⡴⢿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠑⢄⣠⠾⠁⣀⣄⡈⠙⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⢀⡀⠁⠀⠀⠈⠙⠛⠂⠈⣿⣿⣿⣿⣿⠿⡿⢿⣆⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⢀⡾⣁⣀⠀⠴⠂⠙⣗⡀⠀⢻⣿⣿⠭⢤⣴⣦⣤⣹⠀⠀⠀⢀⢴⣶⣆ 
+;⠀⠀⢀⣾⣿⣿⣿⣷⣮⣽⣾⣿⣥⣴⣿⣿⡿⢂⠔⢚⡿⢿⣿⣦⣴⣾⠁⠸⣼⡿ 
+;⠀⢀⡞⠁⠙⠻⠿⠟⠉⠀⠛⢹⣿⣿⣿⣿⣿⣌⢤⣼⣿⣾⣿⡟⠉⠀⠀⠀⠀⠀ 
+;⠀⣾⣷⣶⠇⠀⠀⣤⣄⣀⡀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠉⠈⠉⠀⠀⢦⡈⢻⣿⣿⣿⣶⣶⣶⣶⣤⣽⡹⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠉⠲⣽⡻⢿⣿⣿⣿⣿⣿⣿⣷⣜⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣶⣮⣭⣽⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⣀⣀⣈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+;⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠻⠿⠿⠿⠿⠛⠉
