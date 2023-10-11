@@ -1,0 +1,56 @@
+== Ejercicio 1a ==
+
+Clásicos 0: 54
+Clásicos 1: 41
+Clásicos 2: 53
+Clásicos 3: 40
+Clásicos 4: 53
+Clásicos 5: 55
+Clásicos 6: 49
+Clásicos 7: 39
+Clásicos 8: 45
+Clásicos 9: 56
+Clásicos 10: 38
+Clásicos 11: 42
+Clásicos 12: 55
+Clásicos 13: 50
+Clásicos 14: 50
+Clásicos 15: 47
+Clásicos 16: 53
+Clásicos 17: 51
+Clásicos 18: 66
+Clásicos 19: 57
+Clásicos 20: 51
+Clásicos 21: 48
+Clásicos 22: 56
+Clásicos 23: 51
+Clásicos 24: 45
+Clásicos 25: 54
+Clásicos 26: 44
+Clásicos 27: 50
+Clásicos 28: 48
+Clásicos 29: 50
+Clásicos 30: 49
+Clásicos 31: 37
+Clásicos 32: 54
+Clásicos 33: 54
+Clásicos 34: 51
+Clásicos 35: 55
+Clásicos 36: 52
+Clásicos 37: 45
+Clásicos 38: 42
+Clásicos 39: 43
+Clásicos 40: 51
+Clásicos 41: 50
+Clásicos 42: 62
+Clásicos 43: 56
+Clásicos 44: 47
+Clásicos 45: 49
+Clásicos 46: 45
+Clásicos 47: 46
+Clásicos 48: 49
+Clásicos 49: 58
+
+== Ejercicio 1b ==
+
+Array 0:[(65, 0)(0, 91)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)(0, 0)]
