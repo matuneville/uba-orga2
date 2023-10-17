@@ -33,17 +33,17 @@
 
 /* Offsets en la gdt */
 /* -------------------------------------------------------------------------- */
-#define GDT_OFF_NULL_DESC (GDT_IDX_NULL_DESC << 3)
+#define GDT_OFF_NULL_DESC (GDT_IDX_NULL_DESC << 3) // es por la defnicion de index, que se multiplica el index * 8 para el offset
 #define GDT_OFF_VIDEO  (GDT_IDX_VIDEO << 3)
 
 /* COMPLETAR - Valores para los selectores de segmento de la GDT 
  * Definirlos a partir de los índices de la GDT, definidos más arriba 
  * Hint: usar operadores "<<" y "|" (shift y or) */
 
-//#define GDT_CODE_0_SEL ??
-//#define GDT_DATA_0_SEL ??
-//#define GDT_CODE_3_SEL ??
-//#define GDT_DATA_3_SEL ??
+#define GDT_CODE_0_SEL (GDT_IDX_CODE_0 << 4) + (0b0 << 2) + (0b00)
+#define GDT_DATA_0_SEL (GDT_IDX_DATA_0 << 4) + (0b0 << 2) + (0b00)
+#define GDT_CODE_3_SEL (GDT_IDX_CODE_3 << 4) + (0b0 << 2) + (0b11)
+#define GDT_DATA_3_SEL (GDT_IDX_DATA_3 << 4) + (0b0 << 2) + (0b11) 
 
 
 // Macros para trabajar con segmentos de la GDT.
@@ -61,14 +61,14 @@
 #define GDT_BASE_HIGH(base) (uint8_t)((((uint32_t)(base)) >> 24) & 0xFF)
 
 /* COMPLETAR - Valores de atributos */ 
-//#define DESC_CODE_DATA ??
-//#define DESC_SYSTEM    ??
-//#define DESC_TYPE_EXECUTE_READ ??
-//#define DESC_TYPE_READ_WRITE   ??
+#define DESC_CODE_DATA 0b1
+#define DESC_SYSTEM  0b0
+#define DESC_TYPE_EXECUTE_READ 0b1010
+#define DESC_TYPE_READ_WRITE   0b0010
 
 /* COMPLETAR - Tamaños de segmentos */ 
-//#define FLAT_SEGM_SIZE   ??
-//#define VIDEO_SEGM_SIZE  ??
+#define FLAT_SEGM_SIZE   817 * 1024 * 1024 // size en Byte?
+#define VIDEO_SEGM_SIZE  ??
 
 
 /* Direcciones de memoria */

@@ -15,7 +15,7 @@
 // Define el descriptor de la GDT
 // Es una estructura de 48 bits con dos elementos
 typedef struct str_gdt_descriptor {
-  uint16_t gdt_length;
+  uint16_t gdt_length; // indica cantidad de descriptors
   uint32_t gdt_addr;
 } __attribute__((__packed__)) gdt_descriptor_t;
 

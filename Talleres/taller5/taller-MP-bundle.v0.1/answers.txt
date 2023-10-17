@@ -1,0 +1,28 @@
+1)
+    Bien. un "modo" de un procesador se refiere a diferentes "roles" que puede tomar un procesador definiendo que funciones tiene, la proteccion de memoria, etc (ej una pc cuando se esta usando normalmente no es deseable que un programa pueda acceder sin restricciones a la memoria ya que podria causar problemas)
+
+    Modo real: Este es el modo más simple y antiguo. El procesador se comporta como un procesador de 16 bits muy básico. Se utiliza para ejecutar software antiguo escrito para procesadores x86 más antiguos. Sin embargo, tiene limitaciones, como un acceso limitado a la memoria y la falta de soporte para multitarea. 
+
+    Modo protegido: Este es un modo más avanzado que permite al procesador acceder a una mayor cantidad de memoria (32 bits o 64 bits) y proporciona funciones de protección de memoria. Este modo se utiliza en sistemas operativos modernos para garantizar que un programa no sobrescriba accidentalmente (o de manera maliciosa) los datos de otro programa.
+
+
+2)
+    Como ya dijimos en el 1), el modo real tiene ciertas limitaciones y falta proteccion de memoria (ver que causaria eso arriba) (y velocidad/optimiz)
+
+
+3)  
+    La GDT (Global Descriptor Table) es una estructura de datos fundamental en la arquitectura x86 que se utiliza para describir diferentes segmentos de memoria en un sistema. (ver foto para segmentos)
+
+    Ver tabla del libro y charlarlo en el momento.
+
+
+4) 
+    La combinacion de bits para Execute/Read es 1010 (el decimal 10) aunque también pueden ser los decimales 11, 14, 15.
+
+
+6)
+    En el archivo gdt.h gdt_descriptor_t contiene la cantidad de gdt_entry_t que existen y donde empieza.
+    gdt_entry_t contiene los datos de un segmento. 
+
+    
+7)
