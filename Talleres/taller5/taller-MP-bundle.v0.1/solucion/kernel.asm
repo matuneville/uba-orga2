@@ -7,12 +7,13 @@
 
 global start
 
-
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
+extern print_text_rm
+extern 
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
-;%define CS_RING_0_SEL ??   
-;%define DS_RING_0_SEL ??   
+%define CS_RING_0_SEL ??
+%define DS_RING_0_SEL ??   
 
 
 BITS 16
@@ -35,8 +36,8 @@ start_pm_len equ    $ - start_pm_msg
 ;; Punto de entrada del kernel.
 BITS 16
 start:
-    ; COMPLETAR - Deshabilitar interrupciones
-
+    ; COMPLETAR - Deshabilitar interrupciones LISTO
+    cli ; clear interrupt flag
 
     ; Cambiar modo de video a 80 X 50
     mov ax, 0003h
@@ -48,11 +49,15 @@ start:
     ; COMPLETAR - Imprimir mensaje de bienvenida - MODO REAL
     ; (revisar las funciones definidas en print.mac y los mensajes se encuentran en la
     ; sección de datos)
-
+    ; print("To my other favourite A.F. it's an honour working with you. Fondly, M.N.")
+    call print_text_rm
+    
     ; COMPLETAR - Habilitar A20
     ; (revisar las funciones definidas en a20.asm)
+    call A20_enable
 
     ; COMPLETAR - Cargar la GDT
+
 
     ; COMPLETAR - Setear el bit PE del registro CR0
 
@@ -69,6 +74,8 @@ modo_protegido:
     ; COMPLETAR - Establecer el tope y la base de la pila
 
     ; COMPLETAR - Imprimir mensaje de bienvenida - MODO PROTEGIDO
+    call print_text_pm
+
 
     ; COMPLETAR - Inicializar pantalla
     

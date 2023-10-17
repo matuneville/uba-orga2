@@ -25,4 +25,7 @@
     gdt_entry_t contiene los datos de un segmento. 
 
     
-7)
+10) 
+    Esta instrucción carga los valores del operando fuente en el registro de la tabla de descriptores globales (GDTR). El operando fuente especifica una ubicación de memoria de 6 bytes que contiene la dirección base (una dirección lineal) y el límite (tamaño de la tabla en bytes) de la GDT.
+
+    Si el atributo del tamaño del operando es de 32 bits, se cargan un límite de 16 bits (los 2 bytes inferiores de los 6 bytes del operando) y una dirección base de 32 bits (los 4 bytes superiores del operando) en el registro. Si el atributo del tamaño del operando es de 16 bits, se cargan un límite de 16 bits (los 2 bytes inferiores) y una dirección base de 24 bits (los tercer, cuarto y quinto byte). En este caso, el byte de mayor orden del operando no se utiliza y el byte de mayor orden de la dirección base en el GDTR se llena con ceros.
