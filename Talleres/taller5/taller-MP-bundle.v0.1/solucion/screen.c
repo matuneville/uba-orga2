@@ -90,8 +90,8 @@ void screen_draw_layout(void) {
       p[f][c].a = C_BG_BLACK;
     }
   }
-  print("Jesse, we need to cook Jesse", 20, 0, C_FG_BLUE + C_BG_BLACK);
-  print("Jesse, we've better call Saul Goodman", 20, 1, C_FG_GREEN + C_BG_BLACK);
-  print("Where is the meth, Jesse", 20, 2, C_FG_RED + C_BG_BLACK);
-  print("FURFI 2023", 20, 3, C_FG_WHITE + C_BG_BLACK);
+  print("Jesse, we need to cook Jesse", 20, 0, C_FG_LIGHT_CYAN + C_BG_BLACK);
+  print("Jesse, we'd better call Saul Goodman", 20, 1, C_FG_LIGHT_CYAN + C_BG_BLACK);
+  print("Where is the meth, Jesse", 20, 2, C_FG_LIGHT_CYAN + C_BG_BLACK);
+  print("FURFI 2023", 20, 5, C_FG_GREEN + C_BG_BLACK);
 }
