@@ -56,9 +56,16 @@ void print_hex(uint32_t numero, int32_t size, uint32_t x, uint32_t y,
   }
 }
 
+/*
+Entiendo que esta función lo que hace es dibujar un recuadro que simula una pantalla
+utilizando un arreglo (que simula matriz) de "ca", de dimensiones (fSize - fInit) x (cSize - cInit),
+poniendo en cada "ca" el mismo char y attribute recibido como argumento.
+
+Ocupará en memoria el tamaño de p, que está definido por VIDEO y VIDEO_COLS
+*/ 
 void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
                      uint32_t cSize, uint8_t character, uint8_t attr) {
-  ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO;
+  ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO; // por que no hace un malloc ?
   uint32_t f;
   uint32_t c;
   for (f = fInit; f < fInit + fSize; f++) {
@@ -67,7 +74,24 @@ void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
       p[f][c].a = attr;
     }
   }
-}
+} 
 
+/*
+Usaremos la funcion anterior como template
+Preguntar por qué funciona bien esto?
+No tendriamos que recibir el puntero a la memoria de video como argumento?
+Por que hay que generar una nueva pantalla?
+*/
 void screen_draw_layout(void) {
+  ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO;
+  for (uint32_t f = 0; f < VIDEO_FILS; f++) {
+    for (uint32_t c = 0; c < VIDEO_COLS; c++) {
+      p[f][c].c = 0;
+      p[f][c].a = C_BG_BLACK;
+    }
+  }
+  print("Jesse, we need to cook Jesse", 20, 0, C_FG_BLUE + C_BG_BLACK);
+  print("Jesse, we've better call Saul Goodman", 20, 1, C_FG_GREEN + C_BG_BLACK);
+  print("Where is the meth, Jesse", 20, 2, C_FG_RED + C_BG_BLACK);
+  print("FURFI 2023", 20, 3, C_FG_WHITE + C_BG_BLACK);
 }

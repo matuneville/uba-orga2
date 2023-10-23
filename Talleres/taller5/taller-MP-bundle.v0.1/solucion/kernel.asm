@@ -10,9 +10,10 @@ global start
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
 extern print_text_rm
 extern print_text_pm
-extern C_FG_CYAN
+extern C_FG_CYAN ; no funca usar el color asi
 extern A20_enable
 extern GDT_DESC
+extern screen_draw_layout
 
 ;extern GDT_CODE_0_SEL
 ;extern GDT_DATA_0_SEL
@@ -124,7 +125,7 @@ modo_protegido:
     pm_mode_loaded:
 
     ; COMPLETAR - Inicializar pantalla
-    
+    call screen_draw_layout
    
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
