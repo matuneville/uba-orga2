@@ -120,7 +120,7 @@ gdt_entry_t gdt[GDT_COUNT] =
             .base_15_0 = GDT_BASE_LOW(VIDEO), 
             .base_23_16 = GDT_BASE_HIGH(VIDEO), // VIDEO = 0x000B8000
             .type = DESC_TYPE_READ_WRITE, 
-            .s = DESC_CODE_DATA, // suponemos que es code-data ?
+            .s = DESC_CODE_DATA, 
             .dpl = 0x3,
             .p = 0x1,
             .limit_19_16 = GDT_LIMIT_HIGH(GDT_LIMIT_4KIB(VIDEO_SEGM_SIZE)),

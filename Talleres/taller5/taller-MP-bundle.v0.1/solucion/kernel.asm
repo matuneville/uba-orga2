@@ -38,7 +38,7 @@ jmp start
 ;;
 ;; Seccion de datos.
 ;; -------------------------------------------------------------------------- ;;
-start_rm_msg db     'Iniciando kernel en Modo Real hola FURFI GOD'
+start_rm_msg db     'Iniciando kernel en Modo Real'
 start_rm_len equ    $ - start_rm_msg
 
 start_pm_msg db     'Iniciando kernel en Modo Protegido'
@@ -67,7 +67,7 @@ start:
     ; sección de datos)
     ; call print_text_rm me daba error
     ; preguntar, por que no es asi ?
-    call print_text_rm      start_rm_msg, start_rm_len, 3, 0, 0 ; fila y columna ??
+    print_text_rm      start_rm_msg, start_rm_len, 3, 0, 5
     
     ; COMPLETAR - Habilitar A20
     ; (revisar las funciones definidas en a20.asm)
@@ -90,7 +90,7 @@ start:
     ; no se permite "or cr0, 1" ya que los registros de control estan "protegidos"
 
     ; COMPLETAR - Saltar a modo protegido (far jump)
-    ; (recuerden que un far jmp se especifica como jmp CS_selector:address)
+    ; (recuerden que un far jmp se especifica como jmp CS_selector:add ress)
     ; Pueden usar la constante CS_RING_0_SEL definida en este archivo
     ; ejercicio 15)
     jmp CS_RING_0_SEL:modo_protegido
@@ -105,7 +105,7 @@ modo_protegido:
     ; ejercicio 16)
     mov bx, DS_RING_0_SEL 
     mov ds, bx  ; cargo todos los registros selectores para que inicien en segmento de datos de nivel 0
-    mov es, bx
+    mov es, bx ; hacemos esto porque es segmentacion FLAT
     mov gs, bx 
     mov fs, bx 
     mov ss, bx 
@@ -114,14 +114,13 @@ modo_protegido:
     ; los registros que indican dónde está la base y el tope del stack son EBP y ESP
     ; ejercicio 17)
     mov ebp, 0x25000
-    mov esp, 0x25000
+    mov esp, ebp
 
     ; COMPLETAR - Imprimir mensaje de bienvenida - MODO PROTEGIDO
     ; ejercicio 18)
     ; call print_text_pm me daba error
     ; preguntar, por que no es asi ?
-    print_text_pm      start_pm_msg, start_pm_len, 3, 0, 0 ; fila y columna ??
-
+    print_text_pm      start_pm_msg, start_pm_len, 3, 0, 0
     pm_mode_loaded:
 
     ; COMPLETAR - Inicializar pantalla

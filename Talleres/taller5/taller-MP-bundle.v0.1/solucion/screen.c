@@ -65,7 +65,7 @@ Ocupará en memoria el tamaño de p, que está definido por VIDEO y VIDEO_COLS
 */ 
 void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
                      uint32_t cSize, uint8_t character, uint8_t attr) {
-  ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO; // por que no hace un malloc ?
+  ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO; // por que no hace un malloc ? donde hace 80 * 50 ?
   uint32_t f;
   uint32_t c;
   for (f = fInit; f < fInit + fSize; f++) {
@@ -87,11 +87,12 @@ void screen_draw_layout(void) {
   for (uint32_t f = 0; f < VIDEO_FILS; f++) {
     for (uint32_t c = 0; c < VIDEO_COLS; c++) {
       p[f][c].c = 0;
-      p[f][c].a = C_BG_BLACK;
+      p[f][c].a = C_BG_CYAN;
     }
   }
-  print("Jesse, we need to cook Jesse", 20, 0, C_FG_LIGHT_CYAN + C_BG_BLACK);
-  print("Jesse, we'd better call Saul Goodman", 20, 1, C_FG_LIGHT_CYAN + C_BG_BLACK);
-  print("Where is the meth, Jesse", 20, 2, C_FG_LIGHT_CYAN + C_BG_BLACK);
-  print("FURFI 2023", 20, 5, C_FG_GREEN + C_BG_BLACK);
+  print("Jesse, we need to cook Jesse", 20, 1, C_FG_BLACK + C_BG_CYAN);
+  print("Jesse, we'd better call Saul Goodman", 20, 2, C_FG_BLACK + C_BG_CYAN);
+  print("WHERE IS THE MONEY SKYLER", 20, 3, C_FG_BLACK + C_BG_CYAN);
+  print("FURFI 2023", 20, 15, C_FG_RED + C_BG_CYAN);
 }
+
