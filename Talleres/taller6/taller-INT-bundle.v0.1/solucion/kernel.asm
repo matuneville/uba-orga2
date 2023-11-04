@@ -146,6 +146,8 @@ modo_protegido:
     int 88
     int 98
 
+    terminado:
+
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
     mov ebx, 0xFFFF

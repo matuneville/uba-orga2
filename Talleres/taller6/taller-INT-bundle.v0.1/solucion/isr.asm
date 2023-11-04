@@ -125,6 +125,7 @@ global _isr32
 _isr32:
     ; Prologo
     pushad ; pushea todo (consultar especificamente qué)
+    ; 
     ; Fin prologo
 
     call next_clock
@@ -148,15 +149,17 @@ _isr33:
     ; Fin prologo
 
     in al, 0x60 ; lo sacamos del set de instrucciones, por que usa AL ? felix?
-    
+
+    push eax
     call process_scancode
+    pop eax
 
     call pic_finish1 ; avisa que ya se atendió la interrupcion 
     
     ;Epilogo
     popad ; popea todo 
 
-    iret ; retorna con EFLAGS
+    iret ; retorna con EFLAGS, CS y EIP
 
 
 
@@ -167,14 +170,15 @@ global _isr88
 ; COMPLETAR: Implementar la rutina
 _isr88:
     ; Prologo
-    pushad ; pushea todo
+    ; pushad ; NO SE HACE PUSH, SINO CUANDO HACEMOS POPAD VOLVEMOS A TOMAR
+    ; EL EAX PUSHEADO
     ; Fin prologo
 
     mov eax, 0x58
-    call pic_finish1 ; avisa que ya se atendió la interrupcion 
+    ; call pic_finish1 ; avisa que ya se atendió la interrupcion 
     
     ;Epilogo
-    popad ; popea todo 
+    ; popad ; popea todo 
 
     iret ; retorna con EFLAGS
 
@@ -185,14 +189,14 @@ global _isr98
 ; COMPLETAR: Implementar la rutina
 _isr98:
      ; Prologo
-    pushad ; pushea todo
+    ; pushad ; pushea todo
     ; Fin prologo
 
     mov eax, 0x62
-    call pic_finish1 ; avisa que ya se atendió la interrupcion 
+    ; call pic_finish1 ; avisa que ya se atendió la interrupcion 
     
     ;Epilogo
-    popad ; popea todo 
+    ; popad ; popea todo 
 
     iret ; retorna con EFLAGS
 

@@ -37,6 +37,7 @@ void pic_reset() {
   outb(PIC2_PORT + 1, 0x70); // inicializo a partir de la 0x70
   outb(PIC2_PORT + 1, 0x02); // inicializo
   outb(PIC2_PORT + 1, 0x01); // Modo no Buffered, Fin de interrupcion Normal
+  outb(PIC2_PORT + 1, 0xFF);
 }
 
 void pic_enable() {

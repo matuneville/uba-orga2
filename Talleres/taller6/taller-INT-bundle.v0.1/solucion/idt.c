@@ -36,6 +36,9 @@ idt_descriptor_t IDT_DESC = {sizeof(idt) - 1, (uint32_t)&idt};
     }
 */
 
+
+// estas son las interrupt gates
+
 /* COMPLETAR: Dado un numero de de interrupcion asigna a `idt` la entrada
  * correspondiente con nivel 0 */
 #define IDT_ENTRY0(numero)                                                     \
@@ -58,7 +61,7 @@ idt_descriptor_t IDT_DESC = {sizeof(idt) - 1, (uint32_t)&idt};
     .type = 14,                                                               \
     .dpl = 3,                                                                  \
     .present = 1                                                              \
-  }
+  } // son codigo a nivel Kernel (0) y utilizadas por User (3)
 
 void idt_init() {
   // Excepciones
