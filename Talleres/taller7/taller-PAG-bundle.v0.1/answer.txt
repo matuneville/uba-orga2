@@ -12,7 +12,7 @@ checkpoint 1:
             B. Bits 12 a 21: Table
             C. Bits  0 a 11: Offset
 
-            Para el Page Directory, tenemos el CR3 (que se va actualizando según la tarea actual) que tiene su dirección de base. A dicha base, le sumamos A para obtener el Entry a la base de la Page Table. Accedemos a esta (PDE), le sumamos B para obtener el Entry a la base de la página en el Physical Address Space (PTE). A esta base le sumamos finalmente C, y en dicha localización fisica estará almacenada la informacion buscada.
+            Para el Page Directory, tenemos el CR3 (que se va actualizando según la tarea actual) que tiene su dirección de base. A dicha base, le sumamos A para obtener el Entry a la base de la Page Table. Accedemos a esta (PDE) que nos dirá la dirección fisica de la Page Table (PT), le sumamos B para obtener el Entry (PTE) a la base de la página en el Physical Address Space. A esta base le sumamos finalmente C, y en dicha localización fisica estará almacenada la informacion buscada.
 
             
     c) Los atributos de la PTE son:

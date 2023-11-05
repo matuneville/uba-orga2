@@ -86,12 +86,11 @@ paddr_t mmu_init_kernel_dir(void) {
   kpd[0].attrs = MMU_P + MMU_W;  // preguntar, que pasa con el resto de atributos?
   
   // ahora toca escribir en toda la tabla los Entrys a las páginas finales
+  uint32_t page_address = 0x00000000;
   for(int i = 0; i < 1024; i++){
-    kpt[i].page = i; // ?
-    kpt[i].attrs = MMU_P + MMU_W;
+    kpt[i].page = 
   }
-
-  return KERNEL_PAGE_DIR;
+ 
 }
 
 /**
@@ -103,19 +102,6 @@ paddr_t mmu_init_kernel_dir(void) {
  * @param attrs los atributos a asignar en la entrada de la tabla de páginas
  */
 void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
-  pd_entry_t* page_dir = CR3_TO_PAGE_DIR(cr3);
-
-  uint32_t Dir = VIRT_PAGE_DIR(virt);
-  uint32_t Table = VIRT_PAGE_TABLE(virt);
-  
-
-  paddr_t nueva_page = mmu_next_free_kernel_page();
-  zero_page(nueva_page);
-  page_dir[]
-
-
-  page_dir[Dir]
-  
 }
 
 /**

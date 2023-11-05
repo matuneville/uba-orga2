@@ -1,0 +1,35 @@
+checkpoint 1:
+    a) Dos niveles de privilegio: Supervisor, o kernel (0) y usuario (1).
+    
+    b) Vamos por pasos:
+        1- Tenemos un Logical Address que tiene un offset de 32b y un Segment Selector de 16b.
+        
+        2- Con el Segment Selector, podemos acceder al Segment Descriptor para tomar la base del segmento y, sumandole el offset previo, accedemos a la Linear Address (como tambien tenemos el segment limit sabemos si el offset es correcto)
+
+        3- Con la Linear Address, tenemos:
+            
+            A. Bits 22 a 31: Dir
+            B. Bits 12 a 21: Table
+            C. Bits  0 a 11: Offset
+
+            Para el Page Directory, tenemos el CR3 (que se va actualizando según la tarea actual) que tiene su dirección de base. A dicha base, le sumamos A para obtener el Entry a la base de la Page Table. Accedemos a esta (PDE), le sumamos B para obtener el Entry a la base de la página en el Physical Address Space (PTE). A esta base le sumamos finalmente C, y en dicha localización fisica estará almacenada la informacion buscada.
+
+            
+    c) Los atributos de la PTE son:
+        - El bit D(dirty) es seteado por unidad de memoria del procesador cuando se escribe en la pagina, se limpia por soft.
+        - El bit A(accessed) es seteado por unidad de memoria del procesador cuando se escribe o lee en la pagina, se limpia por soft.
+        - El PCD (cache disabled) hace que la pagina no se almacene en memoria rapida.
+        - PWT (write through) hace que al escribir la escritura se refleje en cache y memoria a la vez, sino solo se actualiza la memoria cuando se desaloja la linea de cache.
+        - U/S indica si la página puede ser accedida por el espacio de usuario (bit en 1) o solo supervisor/kernel (bit en 0).
+        - R/W indica si la pagina puede leerse y escribirse (bit en 1) o solo leerse (bit en 0).
+        - P indica si la pagina se encuentra cargada en memoria o no.
+
+
+    d) Cuando los atributos U/S y R/W en el directorio de páginas y la tabla de páginas difieren, se aplican las restricciones más restrictivas.
+    Por lo tanto, si el directorio de páginas tiene un atributo más restrictivo que la entrada de la tabla de páginas,
+    prevalecerán las restricciones del directorio de páginas.
+    Esto se hace para garantizar un control adecuado sobre el acceso a la memoria y la seguridad del sistema.
+    Los atributos de una página específica en este caso se determinan de acuerdo con las
+    restricciones más restrictivas entre el directorio de páginas y la entrada de la tabla de páginas
+    
+    e)
