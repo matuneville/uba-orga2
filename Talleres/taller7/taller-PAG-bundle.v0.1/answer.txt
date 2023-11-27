@@ -12,7 +12,7 @@ checkpoint 1:
             B. Bits 12 a 21: Table
             C. Bits  0 a 11: Offset
 
-            Para el Page Directory, tenemos el CR3 (que se va actualizando según la tarea actual) que tiene su dirección de base. A dicha base, le sumamos A para obtener el Entry a la base de la Page Table. Accedemos a esta (PDE) que nos dirá la dirección fisica de la Page Table (PT), le sumamos B para obtener el Entry (PTE) a la base de la página en el Physical Address Space. A esta base le sumamos finalmente C, y en dicha localización fisica estará almacenada la informacion buscada.
+            Para el Page Directory, tenemos el CR3 (que se va actualizando según la tarea actual) que tiene su dirección de base. En dicha base, utilizamos A para obtener el Entry a la base de la Page Table. Accedemos a esta (PDE) que nos dirá la dirección fisica de la Page Table (PT), utilizamos B para obtener el Entry (PTE) en la base de la página en el Physical Address Space. A esta base le sumamos finalmente C, y en dicha localización fisica estará almacenada la informacion buscada.
 
             
     c) Los atributos de la PTE son:
@@ -42,3 +42,11 @@ checkpoint 1:
     Cada entrada en el TLB tiene varios atributos. Aunque estos pueden variar dependiendo del sistema, generalmente incluyen la dirección virtual, la dirección física correspondiente y bits de estado como bits de validez y bits de protección de acceso.
 
     Al desalojar una entrada específica del TLB, la entrada correspondiente en la tabla de paginación original no se ve afectada. Esto se debe a que el TLB es simplemente una caché de la tabla de paginación y no tiene ninguna influencia sobre la tabla de paginación en sí. Sin embargo, si la entrada desalojada del TLB se necesita nuevamente, la MMU tendrá que buscar la entrada correspondiente en la tabla de paginación, lo que puede llevar más tiempo.
+
+    checkpoint 3
+
+    b) ¿Por qué es necesario mapear y desmapear las páginas de destino y fuente? En un sistema operativo con paginación, las direcciones físicas no se pueden acceder directamente desde el código del kernel. En su lugar, se accede a través de direcciones virtuales que se mapean a direcciones físicas. Por lo tanto, necesitamos mapear las direcciones físicas de las páginas de origen y destino a direcciones virtuales para poder copiar los datos. Después de la copia, desmapeamos las páginas para liberar las direcciones virtuales para su reutilización.
+
+    ¿Qué función cumplen SRC_VIRT_PAGE y DST_VIRT_PAGE? SRC_VIRT_PAGE y DST_VIRT_PAGE son direcciones virtuales temporales utilizadas para mapear las páginas de origen y destino durante la copia. Estas constantes deben definirse en algún lugar fuera de esta función.
+
+    ¿Por qué es necesario obtener el CR3 con rcr3()? CR3 es el registro que contiene la dirección de la tabla de páginas de nivel superior en uso actualmente. Necesitamos obtener CR3 para saber en qué tabla de páginas realizar el mapeo y desmapeo.

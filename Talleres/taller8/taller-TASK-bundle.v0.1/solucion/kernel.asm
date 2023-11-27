@@ -21,12 +21,11 @@ extern pic_enable
 extern KERNEL_PAGE_DIR
 extern mmu_init
 extern mmu_init_kernel_dir
-
-;extern GDT_CODE_0_SEL
-;extern GDT_DATA_0_SEL
-
-; preguntar por que no podemos usar lo de arriba !!!
-; tuvimos que redefinir todo lo del defines.h de nuevo   :(
+extern mmu_init_task_dir
+extern tss_init
+extern tasks_screen_draw
+extern sched_init
+extern tasks_init
 
 GDT_IDX_CODE_0 equ 1
 GDT_IDX_DATA_0 equ 3
@@ -37,6 +36,12 @@ GDT_DATA_0_SEL equ GDT_IDX_DATA_0 << 3
 %define CS_RING_0_SEL      GDT_CODE_0_SEL
 %define DS_RING_0_SEL      GDT_DATA_0_SEL  
 
+%define TASK_A_CODE_START (0x00018000)
+
+; 0x58 = 01011 000 = indice 11 en la GDT y le agrego 3 ceros para obtener selector
+%define SELECTOR_TSS_INICIAL 0x58
+; 0x60 = 01100 000 = indice 12 en la GDT y le agrego 3 ceros para obtener selector
+%define SELECTOR_TSS_IDLE 0x60 
 
 BITS 16
 ;; Saltear seccion de datos
@@ -151,8 +156,6 @@ modo_protegido:
     
     paginacion_activada:
 
-
-
     ;; -------------------------------------------------------------------------- ;;
     ;                           taller interrupciones
     ; Ejercicio 3)
@@ -170,6 +173,33 @@ modo_protegido:
     int 98
 
     interrupciones_activada:
+
+    ;; -------------------------------------------------------------------------- ;;
+    ;                           taller tareas
+
+    call tss_init
+    call tasks_screen_draw
+
+    ; cargo tarea inicial
+    mov ax, SELECTOR_TSS_INICIAL
+    ltr ax
+
+    call sched_init
+    call tasks_init
+
+    ; El PIT (Programmable Interrupt Timer) corre a 1193182Hz.
+    ; Cada iteracion del clock decrementa un contador interno, cuando éste llega
+    ; a cero se emite la interrupción. El valor inicial es 0x0 que indica 65536,
+    ; es decir 18.206 Hz
+    mov ax, 1000
+    out 0x40, al
+    rol ax, 8
+    out 0x40, al
+
+    ; far jmp a tarea Idle porque esta en otro segmento
+    jmp SELECTOR_TSS_IDLE:0 ; offset 0
+
+    tareas_activadas:
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF

@@ -86,11 +86,12 @@ paddr_t mmu_init_kernel_dir(void) {
   kpd[0].attrs = MMU_P + MMU_W;  // preguntar, que pasa con el resto de atributos?
   
   // ahora toca escribir en toda la tabla los Entrys a las páginas finales
-  uint32_t page_address = 0x00000000;
   for(int i = 0; i < 1024; i++){
-    kpt[i].page = 
+    kpt[i].page = i; 
+    kpt[i].attrs = MMU_P + MMU_W;
   }
- 
+
+  return KERNEL_PAGE_DIR;
 }
 
 /**
@@ -102,6 +103,36 @@ paddr_t mmu_init_kernel_dir(void) {
  * @param attrs los atributos a asignar en la entrada de la tabla de páginas
  */
 void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
+  // obtenemos la base del Page Directory 
+  pd_entry_t* page_dir = CR3_TO_PAGE_DIR(cr3);
+  lcr3(cr3);
+
+  uint32_t dir_index = VIRT_PAGE_DIR(virt);
+  uint32_t table_index = VIRT_PAGE_TABLE(virt);
+  
+  if (!(page_dir[dir_index].attrs & MMU_P)) { // si el entry del directorio de páginas no está presente, viendo el bit P
+
+    uint32_t new_page_table_address = mmu_next_free_kernel_page(); // agarro el numero del sgte page table
+    page_dir[dir_index].pt = MMU_ENTRY_PADDR(new_page_table_address); // actualizo el entry del directory
+    // aca abajo quiero los atributos menos restrictivos, y por las dudas agrego present
+    page_dir[dir_index].attrs = (attrs | page_dir[dir_index].attrs) | MMU_P; 
+
+    // ahora ya tengo la tabla nueva, accedo a ella y agrego la pagina
+    pt_entry_t* new_page_table = MMU_ENTRY_PADDR(new_page_table_address);
+    new_page_table[table_index].page = MMU_ENTRY_PADDR(phy);
+    // aca abajo quiero los atributos mas restrictivos, y ṕor las dudas le pongo Present
+    new_page_table[table_index].attrs = (attrs & (new_page_table[table_index].attrs)) | MMU_P; 
+  }
+
+  else{ // si está presente, agrego la nueva página en la tabla
+    //pt_entry_t* page_table = page_dir[dir_index].pt << 12;
+    pt_entry_t* page_table = MMU_ENTRY_PADDR(dir_index); // obtengo el Table Entry, es lo mismo que hacer page_dir[dir_index]
+    page_table[table_index].page = MMU_ENTRY_PADDR(phy);
+    // aca abajo quiero los atributos mas restrictivos, y ṕor las dudas le pongo Present
+    page_table[table_index].attrs = (attrs & (page_table[table_index].attrs)) | MMU_P; 
+  }
+
+  tlbflush();
 }
 
 /**
@@ -110,7 +141,21 @@ void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
  * @return la dirección física de la página desvinculada
  */
 paddr_t mmu_unmap_page(uint32_t cr3, vaddr_t virt) {
+  // obtenemos la base del Page Directory 
+  pd_entry_t* page_dir = CR3_TO_PAGE_DIR(cr3);
 
+  uint32_t dir_index = VIRT_PAGE_DIR(virt);
+  uint32_t table_index = VIRT_PAGE_TABLE(virt);
+  uint32_t offset = VIRT_PAGE_OFFSET(virt);
+
+  pd_entry_t page_table_entry = page_dir[dir_index];
+  pt_entry_t* page_table = page_table_entry.pt;
+
+  kmemset(&page_table[table_index], 0x00, sizeof(pt_entry_t));
+
+  // ahora retorno la direc fisica, que seria la de los atributos en 0
+  page_table_entry.attrs = 0;
+  return page_table;
 }
 
 #define DST_VIRT_PAGE 0xA00000
@@ -125,6 +170,19 @@ paddr_t mmu_unmap_page(uint32_t cr3, vaddr_t virt) {
  * la copia y luego desmapea las páginas. Usar la función rcr3 definida en i386.h para obtener el cr3 actual
  */
 void copy_page(paddr_t dst_addr, paddr_t src_addr) {
+  uint32_t cr3 = rcr3();
+  mmu_map_page(cr3,DST_VIRT_PAGE,dst_addr,MMU_W | MMU_P);
+  mmu_map_page(cr3,SRC_VIRT_PAGE,src_addr,MMU_P);
+
+  uint32_t* src = SRC_VIRT_PAGE;
+  uint32_t* dst = DST_VIRT_PAGE;
+
+  for(int i = 0; i < 1024; i++){
+    dst[i] = src[i];
+  }
+
+  mmu_unmap_page(cr3,DST_VIRT_PAGE);
+  mmu_unmap_page(cr3,SRC_VIRT_PAGE);
 }
 
  /**
@@ -132,14 +190,40 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
  * @pararm phy_start es la dirección donde comienzan las dos páginas de código de la tarea asociada a esta llamada
  * @return el contenido que se ha de cargar en un registro CR3 para la tarea asociada a esta llamada
  */
+
 paddr_t mmu_init_task_dir(paddr_t phy_start) {
+  // identity maping
+  paddr_t cr3 = mmu_next_free_kernel_page();
+  zero_page(cr3);
+  for(uint32_t i = 0; i< identity_mapping_end; i = i + PAGE_SIZE){
+    mmu_map_page(cr3, i, i , MMU_W | MMU_P);
+  }
+
+  // mapeo del codigo, las dos paginas ya creadas
+  mmu_map_page(cr3, TASK_CODE_VIRTUAL, phy_start, MMU_U | MMU_P);
+  mmu_map_page(cr3, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start+PAGE_SIZE, MMU_U | MMU_P);
+
+  // mapeo de la pila , esta la tengo que crear a nivel usuario
+  paddr_t stack = mmu_next_free_user_page();
+  mmu_map_page(cr3, TASK_STACK_BASE-PAGE_SIZE, stack, MMU_U | MMU_W | MMU_P);
   
+  // mapeo de la memoria compartida 
+  mmu_map_page(cr3, TASK_SHARED_PAGE, SHARED , MMU_U | MMU_P);
+
+  return cr3;
 }
+
 
 // COMPLETAR: devuelve true si se atendió el page fault y puede continuar la ejecución 
 // y false si no se pudo atender
 bool page_fault_handler(vaddr_t virt) {
   print("Atendiendo page fault...", 0, 0, C_FG_WHITE | C_BG_BLACK);
   // Chequeemos si el acceso fue dentro del area on-demand
-  // En caso de que si, mapear la pagina
+  if (virt>>12 == ON_DEMAND_MEM_START_VIRTUAL>>12) {
+    mmu_map_page(rcr3(), virt, ON_DEMAND_MEM_START_PHYSICAL, MMU_P | MMU_U | MMU_W);
+ 
+    return 1;
+  }
+
+  return 0;
 }

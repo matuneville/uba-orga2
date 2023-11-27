@@ -1,0 +1,291 @@
+# Recuperatorio del Segundo Parcial: Primer Cuatrimestre 2023
+
+## Ejercicio 1
+
+En un sistema similar al que implementamos en los talleres del curso (modo protegido con paginación activada) se pide:
+- A. Implementar la Syscall exit que al ser llamada por una tarea, inactiva dicha tarea y pone a correr la siguiente (segun indique el sistema de prioridad utilizado). Mostrar el código.
+- B. ¿Cómo modificarías el punto anterior para que exit (además de lo que hace normalmente) guarde el ID de quién la llamó en el EAX de próxima tarea a ejecutar? Mostrar código.
+- C. ¿Y si ahora no es la Syscall exit la que modifica el EAX de nivel 3 de la tarea que va a ser ejecutada luego de la llamada a la Syscall sino la interrupción de reloj? Como deberías modificar el código de la interrupción de reloj?. Mostrar el código y explicar todo lo que agregues al sistema.
+1
+- D. ¿Considerás que es una buena práctica que las tareas se comuniquen sobre-escribiendo los registros de propósito general de otra tarea? ¿Qué problemas pueden surgir? Teniendo en cuenta lo visto en la materia, ¿de que otra forma se podrían pasar mensajes las tareas entre sí? Hacer un esquema que muestre los mapeos de memoria virtual a física de dos tareas que usen la forma de comunicarse propuesta por ustedes. Realizá un diagrama que muestre la interacción del mecanismo con el scheduler y/o los mapeos de memoria.
+
+
+## Resolución 1
+
+### Inciso A  
+
+```asm
+archvo isr.asm
+
+    global _isr99
+    _isr99:
+        pushad
+        call sched_exit_task
+        ; el call nos retorno en eax la sgte tarea a correr
+        mov word [sched_task_selector], ax
+        jmp far [sched_task_offset]
+        .fin:
+
+        ; Actualizamos las estructuras compartidas ante el tick del reloj
+        call tasks_tick
+        
+        ; ; Actualizamos la "interfaz" del sistema en pantalla
+        call tasks_screen_update
+        popad
+        iret
+```
+
+```c
+archivo sched.c
+
+    uint16_t sched_exit_task(void) {
+        // apagamos a la tarea
+        sched_disable_task(current_task);
+        // buscamos la siguiente tarea activa
+        // de acuerdo a la politica de
+        scheduling
+        // y devolvemos la nueva tarea
+        return sched_next_task();
+    }
+```
+
+### Inciso B
+Pasos de la resolución:
+1. Obtener el id de la tarea que llama a la syscall
+2. Desactivar la tarea actual
+3. Buscar la siguiente tarea a ejecutar
+    - a. Obtener el id
+    - b. Obtener el selector
+4. Antes de realizar el cambio de contexto, escribir el id obtenido en el paso 1 en el EAX destino.
+Para eso:
+    - a. Obtenemos la TSS de la nueva tarea
+    - b. Buscamos el ESP de la nueva tarea
+    - c. Nos movemos en la pila hasta donde se ubica el EAX (pusheado por pushad antes de cambiar de contexto)
+    - d. Lo pisamos con el id
+5. Seguimos con el cambio de contexto normal
+
+```asm
+archvo isr.asm
+    
+    global _isr99
+
+    extern current_task
+
+    _isr99:
+        pushad
+        ; 1) Guardamos en la pila el id de la tarea que llama a esta syscall
+        push dword [current_task] 
+
+        ; 2)
+        call sched_exit_task
+
+        ; 3).a
+        call next_task_id
+        ; ahora en eax tenemos el id de la sgte tarea
+        ; lo pusheamos y llamamos a la funcion
+        push eax
+
+        ; 4)
+        call pass_exit_id_to_next_task
+        
+        ; paso 3).b nos devuelve el selector
+        call sched_next_task
+
+        ; 5) sigue igual que antes
+        mov word [sched_task_selector], ax
+        jmp far [sched_task_offset]
+
+        ;terminamos la interrupción
+        .fin:
+        ; Actualizamos las estructuras compartidas ante el tick del reloj
+        call tasks_tick
+        ; ; Actualizamos la "interfaz" del sistema en pantalla
+        call tasks_screen_update
+        popad
+        iret
+```
+
+```c
+// es la primera parte de sched_next_task como funcion aux
+uint8_t sched_next_task_id(void) {
+    // Buscamos la próxima tarea viva (comenzando en la actual)
+    int8_t i;
+    for (i = (current_task + 1); (i % MAX_TASKS) != current_task; i++) {
+        // Si esta tarea está disponible la ejecutamos
+        if (sched_tasks[i % MAX_TASKS].state == TASK_RUNNABLE)
+            break;
+    }
+    // Ajustamos i para que esté entre 0 y MAX_TASKS-1
+    i = i % MAX_TASKS;
+    return i
+}
+
+
+uint16_t sched_next_task(uint8_t task_id){
+    // Si la tarea que encontramos es ejecutable entonces vamos a correrla.
+    if (sched_tasks[i].state == TASK_RUNNABLE){
+        current_task = i;
+        return sched_tasks[i].selector;
+    }
+    // En el peor de los casos no hay ninguna tarea viva. Usemos la idle como selector.
+    return GDT_IDX_TASK_IDLE << 3;
+}
+
+
+void pass_exit_id_to_next_task(uint8_t exit_task_id, uint8_t new_task_id) {
+    tss_t new_task_tss = tss_tasks[new_task_id];
+    uint32_t* new_task_esp = (uint32_t*) new_task_tss.esp;
+    // como es nivel 0, esta mapeado con identity mapping
+    // EAX es el primer registro en pushearse con pushad,
+    // por lo tanto le sumo 28 al esp
+    *(new_task_esp + 28) = exit_task_id;
+    return;
+}
+
+```
+
+### Inciso C
+
+```asm
+_isr32: ;rutina de atención del reloj
+    pushad
+    call pic_finish1
+    call next_clock
+
+    push DWORD [current_task]
+    call sched_next_task
+    cmp ax, 0
+    je .fin
+    str bx
+    cmp ax, bx
+    je .fin
+
+    mov word [sched_task_selector], ax
+    jmp far [sched_task_offset]
+
+    .fin:
+    call tasks_tick
+    call tasks_screen_update
+    popad
+    iret
+```
+
+```asm
+_isr99: ;syscall exit
+    pushad
+    push DWORD [current_task]
+    call sched_disable_task ; desactiva tarea actual (queda en isr99)
+    call sched_next_task_id
+    push eax
+    call pass_exit_id_to_next_task ; escribe id en eax de la sgte tarea (pasa a isr32)
+    call sched_next_task
+
+    mov word [sched_task_selector], ax
+    jmp far [sched_task_offset]
+    
+    .fin:
+    mov esp, 8
+    call tasks_tick
+    call tasks_screen_update
+    popad
+    iret
+```
+
+### Inciso D
+
+![](images/Screenshot%20from%202023-11-26%2018-35-50.png)
+
+
+## Ejercicio 2
+
+El ENTEL575 fue un microprocesador compatible con los Intel i686. Este procesador incluía varias funcionalidades extra que nunca fueron replicadas por Intel. Una de ellas es la operación RSTLOOP, la cual escribe un cero en ECX ’reiniciando’ el contador de vueltas. RSTLOOP se codifica con la secuencia de bytes 0x0F 0x0B.
+
+Tenemos un montón de software escrito para el ENTEL575 pero lamentablemente no poseemos hardware que lo pueda correr. ¿Podrías desarrollar un sistema que nos permita hacerlo?
+
+Para ello respondé los siguientes puntos:
+
+- a. ¿Qué excepción ocurre cuándo un procesador x86 intenta ejecutar una instrucción no soportada?
+- b. Realice un diagrama de pila que muestre el estado de la pila del kernel luego de que una aplicación de usuario intentó ejecutar RSTLOOP.
+- c. ¿Qué dirección de retorno se encuentra en la pila al atender la excepción?
+- d. Describa una posible implementación de RSTLOOP utilizando el mecanismo descrito en (a) y (b).
+    - El mecanismo propuesto sólo debe actuar cuándo la instrucción no soportada es RSTLOOP.
+    - Si la instrucción que generó la excepción no es RSTLOOP la tarea debe ser deshabilitada y la ejecución debe saltar a la tarea idle.
+    - Si la instrucción que generó la excepción es RSTLOOP adecúe la dirección de retorno de manera que permita a la tarea continuar la ejecución sin problemas.
+- e. ¿Qué ocurriría si no se adecuara la dirección de retorno luego de simular RSTLOOP?
+- f. Detalle los cambios a las estructuras del sistema visto en el taller que haría para realizar la implementación descrita en (d).
+- g. Muestre código para la rutina de atención de interrupciones descrita en (d) y todo otro cambio de comportamiento que haya visto necesario
+
+
+### Inciso A
+
+Interrupción 6:
+ - #UD: Undefined Opcode (invalid opcode)
+ - Description: Indicates that the processor attempted to execute an invalid or reserved opcode
+ - Tipo Fault
+ - Error code: no
+ - Saved Instruction Pointer: The saved contents of CS and EIP registers point to the instruction that generated the exception
+
+### Inciso B
+
+![](images/Screenshot%20from%202023-11-26%2019-01-31.png)
+
+### Inciso C
+
+ - Saved Instruction Pointer: The saved contents of CS and EIP registers point to the instruction that generated the exception
+
+
+### Inciso D
+
+Modificamos la rutina de atención de la interrupción 6.  
+Dados:
+- EIP: Puntero a la instrucción no reconocida
+- CS, EFLAGS, ESP, SS: Estado de la tarea  
+
+Hacer:
+- Si en EIP se encuentra la secuencia de bytes 0x0F, 0x0B: (Leemos los bytes en [EIP], [EIP+1])
+    - Escribir 0 en el ECX de la tarea actual
+    - Saltar a la siguiente instrucción de la tarea actual (EIP+2)
+- Sino:
+    - Deshabilitamos la tarea actual en el scheduler
+    - Saltamos a IDLE
+
+### Inciso E
+
+Si no saltamos a la siguiente instrucción de la tarea actual (EIP+2), ...
+
+### Inciso F
+
+Solo modificamos la rutina de atención de la interrupción 6
+
+### Inciso G
+
+```asm
+archivo isr.asm
+
+extern current_task
+extern sched_disable_task
+_isr6:
+    ; cargamos el EIP de la tarea
+    ; EIP = [ESP] por el stack
+    mov ecx, [esp]
+    ; cargamos la instrucción
+    mov cx, [ecx]
+    ; es rstloop?
+    cmp cx, 0x0B0F
+    je .emulate_rstloop
+    ; no es, deshabilitamos
+    push DWORD [current_task]
+    call sched_disable_task
+
+    ...
+    ...
+
+    ; salto a IDLE
+    add esp, 4 ; ajusto pila
+    jmp (12 << 3):0 ; jmp far a idle (el segmento es su id en gdt (12) * 8 para ajustar atributos)
+
+    .emulate_rstloop:
+        mov ecx, 0 ; rstloop le pone 0 a ecx para resetar contador
+        add DWORD [esp], 2 ; avanzo a la sgte instruccion
+        iret
+```
