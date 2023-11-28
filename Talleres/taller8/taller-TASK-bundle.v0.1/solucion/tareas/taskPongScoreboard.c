@@ -4,7 +4,7 @@
 #define HEIGHT TASK_VIEWPORT_HEIGHT
 
 #define SHARED_SCORE_BASE_VADDR (PAGE_ON_DEMAND_BASE_VADDR + 0xF00)
-#define CANT_PONGS 2 //lo habiamos bajado
+#define CANT_PONGS 2 
 
 
 void task(void) {

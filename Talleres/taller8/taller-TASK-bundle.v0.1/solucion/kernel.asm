@@ -141,7 +141,7 @@ modo_protegido:
     ;; -------------------------------------------------------------------------- ;;
     ;                           taller paginacion
     
-    call mmu_init
+    ; call mmu_init
     
     call mmu_init_kernel_dir
     ; en el return ya tenemos el address en eax
@@ -176,6 +176,10 @@ modo_protegido:
 
     ;; -------------------------------------------------------------------------- ;;
     ;                           taller tareas
+
+    push TASK_A_CODE_START
+    call mmu_init_task_dir ; iniciamos una tarea en la direccion dada
+    mov cr3, eax ; movemos el directorio de la tarea a cr3
 
     call tss_init
     call tasks_screen_draw

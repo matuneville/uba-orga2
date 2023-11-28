@@ -90,9 +90,7 @@ void screen_draw_layout(void) {
       p[f][c].a = C_BG_CYAN;
     }
   }
-  print("Jesse, we need to cook Jesse", 20, 1, C_FG_BLACK + C_BG_CYAN);
-  print("Jesse, we'd better call Saul Goodman", 20, 2, C_FG_BLACK + C_BG_CYAN);
-  print("WHERE IS THE MONEY SKYLER", 20, 3, C_FG_BLACK + C_BG_CYAN);
+  print("Hola probandoo 1 2 3", 20, 1, C_FG_BLACK + C_BG_CYAN);
   print("FURFI 2023", 20, 15, C_FG_RED + C_BG_CYAN);
 }
 
