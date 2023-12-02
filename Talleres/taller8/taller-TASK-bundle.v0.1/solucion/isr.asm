@@ -145,16 +145,23 @@ global _isr14
 _isr14:
 	; Estamos en un page fault.
 	pushad
-    ; COMPLETAR: llamar rutina de atención de page fault, pasandole la dirección que se intentó acceder
-    .ring0_exception:
-	; Si llegamos hasta aca es que cometimos un page fault fuera del area compartida.
+  ; COMPLETAR: llamar rutina de atención de page fault, pasandole la dirección que se intentó acceder
+  mov eax, cr2 ; The processor loads the CR2 register with the 32-bit linear address that generated the exception
+  push eax
+  call page_fault_handler
+  add esp, 4
+  cmp al, 1
+  je .fin
+
+  .ring0_exception:
+    ; Si llegamos hasta aca es que cometimos un page fault fuera del area compartida.
     call kernel_exception
     jmp $
 
-    .fin:
-	popad
-	add esp, 4 ; error code
-	iret
+  .fin:
+    popad
+    add esp, 4 ; error code
+    iret
 
 ;; Rutina de atención del RELOJ
 ;; -------------------------------------------------------------------------- ;;

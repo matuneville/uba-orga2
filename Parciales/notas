@@ -1,0 +1,134 @@
+En un sistema que utiliza una combinación de paginación y segmentación, el selector de tareas se utiliza para seleccionar el segmento correcto en la Tabla de Descriptores de Segmento (GDT). Cada entrada en la GDT contiene información sobre la base y el límite de un segmento, así como otros atributos del segmento.
+
+Aquí te dejo un ejemplo de cómo podrías usar el selector de tareas en tu código:
+
+// Obtén la entrada de la GDT para la tarea
+gdt_entry_t gdt_entry = get_gdt_entry(id_task);
+
+// Obtén la base del segmento
+uint32_t base = gdt_entry.base_low | (gdt_entry.base_middle << 16) | (gdt_entry.base_high << 24);
+
+// Suma la dirección virtual a la base para obtener la dirección lineal
+uint32_t linear_address = base + v_dir;
+
+// Luego, puedes usar la dirección lineal para obtener la dirección física a través de la paginación
+paddr_t phy_page = VirtualToPhy(linear_address, cr3);
+
+
+
+
+
+Para implementar esta nueva característica, necesitarás realizar algunos cambios en tu código. Aquí te dejo una descripción general de los pasos que podrías seguir:
+
+Syscall con interrupción: Implementa una syscall que se active con una interrupción específica. Esta syscall será responsable de cambiar la tarea que está actualmente en pantalla.
+
+Manejo de la tecla TAB: Modifica el controlador de teclado para que detecte cuando se suelta la tecla TAB (scancode 0x9F). Cuando esto ocurra, deberá generar la interrupción que activa la syscall mencionada en el punto anterior.
+
+Cambio de tarea en pantalla: La syscall debe cambiar la tarea que está actualmente en pantalla. Para hacer esto, primero debe desmapear la memoria de video física (0xB8000 - 0xB9FFF) de la tarea actual y mapearla a la memoria dummy (0x1E000 - 0x1FFFF). Luego, debe tomar la siguiente tarea en el ciclo, desmapear su memoria dummy y mapear la memoria de video física.
+
+Actualización de la pantalla: Finalmente, la syscall debe copiar el contenido de la memoria de video de la nueva tarea en pantalla a la memoria de video física para que los cambios se reflejen en la pantalla.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+La función mmu_map_page que mencionas es una función de mapeo de memoria que se utiliza en la programación de sistemas operativos. Esta función agrega las entradas necesarias a las estructuras de paginación para que la dirección virtual virt se traduzca en la dirección física phy con los atributos definidos en attrs.
+
+El parámetro cr3 es el contenido que se ha de cargar en un registro CR3 al realizar la traducción. Este registro es crucial en la gestión de la memoria en muchos sistemas operativos, ya que almacena la dirección de la tabla de páginas de nivel superior del proceso actual.
+
+En cuanto a tu pregunta sobre cómo afectaría el selector de una tarea en esta función, el selector de tarea no se utiliza directamente en esta función. Sin embargo, el selector de tarea puede ser utilizado por el sistema operativo para determinar qué tarea está solicitando el mapeo de memoria y, por lo tanto, podría influir en cómo se gestiona el mapeo de memoria.
+
+Por ejemplo, diferentes tareas pueden tener diferentes políticas de mapeo de memoria, y el sistema operativo puede utilizar el selector de tarea para determinar qué política aplicar. Además, el sistema operativo puede utilizar el selector de tarea para rastrear qué tareas están utilizando qué partes de la memoria, lo cual es útil para la gestión de recursos y la depuración.
+
+Es importante tener en cuenta que los detalles específicos de cómo se utiliza el selector de tarea pueden variar dependiendo del sistema operativo y de cómo esté implementado el sistema de gestión de memoria. Te recomendaría que consultes la documentación de tu sistema operativo o del sistema de gestión de memoria que estás utilizando para obtener información más precisa.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ejercicio 1
+
+Ahora las tareas en vez de utilizar la syscall draw (int 88) ahora deben tener acceso directo a memoria de video:
+- La memoria fisica de video (0xB8000 - 0xB9FFF) es la que refleja la pantalla real, y solo puede haber una unica tarea en un determinado momento con a memoria fisica de video mapeada
+- el resto de las tareas tendran asignadas una pantalla dummy (falsa) en la region fisica 0x1E000 - 0x1FFFF
+- la memoria de video de una tarea mapeara siempre en el rango virtual 0x08004000 - 0x08005FFF independientemente si tiene acceso a la pantalla real o no
+
+con el diseño propuesto ha yna unica tarea "actualmente en pantalla" (con acceso a la memoria fisica de video real), las tareas que no se encuentren en pantalla podran escribir a las direcciones virtuales de video pero solo se veran reflejadas en la memoria dummy.  
+
+Soltar la tecla TAB (scancode 0x0F al presionar, 0x9F al soltar) cambiara la tarea actualmente en pantalla a la siguiente de manera ciclica (t1 - t2 - t3 - t1 ...). Se solicita describir los cambios requeridos para implementar esta nueva caracteristica
+
+describa los cambios al proceso de creacion de tareas que se le puede hacer a las siguientes funciones:
+
+paddr_t mmu_init_task_dir(paddr_t phy_start) {
+  // identity maping
+  paddr_t cr3 = mmu_next_free_kernel_page();
+  zero_page(cr3);
+  for(uint32_t i = 0; i< identity_mapping_end; i = i + PAGE_SIZE){
+    mmu_map_page(cr3, i, i , MMU_W | MMU_P);
+  }
+
+  // mapeo del codigo, las dos paginas ya creadas
+  mmu_map_page(cr3, TASK_CODE_VIRTUAL, phy_start, MMU_U | MMU_P);
+  mmu_map_page(cr3, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start+PAGE_SIZE, MMU_U | MMU_P);
+
+  // mapeo de la pila , esta la tengo que crear a nivel usuario
+  paddr_t stack = mmu_next_free_user_page();
+  mmu_map_page(cr3, TASK_STACK_BASE-PAGE_SIZE, stack, MMU_U | MMU_W | MMU_P);
+  
+  // mapeo de la memoria compartida 
+  mmu_map_page(cr3, TASK_SHARED_PAGE, SHARED , MMU_U | MMU_P);
+
+  return cr3;
+}
+
+
+static int8_t create_task(tipo_e tipo) {
+  size_t gdt_id;
+  // recorre la gdt de TSSs hasta encontrar una entrada no presente
+  for (gdt_id = GDT_TSS_START; gdt_id < GDT_COUNT; gdt_id++) {
+    if (gdt[gdt_id].p == 0) {
+      break;
+    }
+  }
+  kassert(gdt_id < GDT_COUNT, "No hay entradas disponibles en la GDT");
+
+  int8_t task_id = sched_add_task(gdt_id << 3); // le pasa el segmento que es el indice en gdt * 8
+  tss_tasks[task_id] = tss_create_user_task(task_code_start[tipo]); // almacena tss en su id correspondiente obtenido 2 lineas arriba
+  gdt[gdt_id] = tss_gdt_entry_for_task(&tss_tasks[task_id]); // guarda en gdt el nuevo entry a la tss
+  return task_id;
+}
+
+int8_t sched_add_task(uint16_t selector) {
+  kassert(selector != 0, "No se puede agregar el selector nulo");
+
+  // Se busca el primer slot libre para agregar la tarea
+  for (int8_t i = 0; i < MAX_TASKS; i++) {
+    if (sched_tasks[i].state == TASK_SLOT_FREE) {
+      sched_tasks[i] = (sched_entry_t) {
+        .selector = selector,
+	      .state = TASK_PAUSED,
+      };
+      return i;
+    }
+  }
+  kassert(false, "No task slots available");
+}

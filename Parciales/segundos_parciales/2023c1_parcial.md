@@ -6,11 +6,7 @@ En un sistema similar al que implementamos en los talleres del curso (modo prote
 Se desea agregar al sistema una syscall para que la tareas después de realizar la cuenta en cuestión puedan cederle el tiempo de ejecución a la tarea que procesará el resultado.  
 
 Se pide:
-- a. Definir o modificar las estructuras de sistema necesarias para que dicho servicio pueda ser invocado.
-- b. Implementar la syscall que llamarán las tareas.
-- c. Dar el pseudo-código de la tarea que procesa resultados (no importa como lo procese).
-- d. Mostrar un pseudo-código de la función sched_next_task para que funcione de acuerdo a las necesidades de este sistema.
-- e. Responder: ¿Qué problemas podrían surgir dadas las modificaciones al sistema? ¿Cómo lo solucionarías?
+
 
 _Se recomienda organizar la resolución del ejercicio realizando paso a paso los items mencionados anteriormente y explicar las decisiones que toman._   
 Detalles de implementación:
@@ -33,15 +29,19 @@ La idea es:
 
 ### Inciso A
 
+- a. Definir o modificar las estructuras de sistema necesarias para que dicho servicio pueda ser invocado.
+
 Debemos agregar una syscall que resuelva el problema planteado, implementandola con interrupciones de software, creando su rutina de atención.  
 
-Le asigno el número de interrupción 90 porque es uno de los disponibles ¿?  
+Le asigno el número de interrupción 90 porque es uno de los disponibles.  
 
 Agregamos a la IDT la entrada correspondiente a esta instrucción con DPL = 3, para que todas las 5 tareas de nivel 3 puedan llamar a este servicio.  
 
-Esto lo hacemos en idt_int, asi se vincula la entrada 90 con el símbolo `_isr90`
+Esto lo hacemos en idt_init, asi se vincula la entrada 90 con el símbolo `_isr90`
 
 ### Inciso B
+
+- b. Implementar la syscall que llamarán las tareas.
 
 
 ```asm
@@ -63,7 +63,7 @@ _isr90:
 
     pop eax ; recupero el resultado de la cuenta
     mov [task_6_sel+40], eax ; guardo el resultado en la tss de tarea 6 en donde corresponde eax
-    mov [task_6_sel+52], ebx ; guardo el id de la llamadora en la tss de tarea 6 en donde corresponde ebx
+    mov [task_6_sel+52], ebx ; guardo el id de la llamadora en la tss de tarea 6 en donde corresponde ebx. Esto se hace para que la tarea 6 sepa cuál es la tarea que realizó la cuenta y pueda reactivarla cuando termine de procesar el resultado.
 
     str cx; cargo selector de segmento actual en cx
     ; quiero que la actual y la 6 no sean iguales
@@ -86,12 +86,15 @@ Para sched_disable_task_current podemos modificar sched_disable_task para que de
 
 ### Inciso C
 
+- c. Dar el pseudo-código de la tarea que procesa resultados (no importa como lo procese).  
+
+
 ```c
 void task_6 () {
 
     /* hago algo */
 
-	sched_enable_task(task_id); // task_id es el id de la tarea llamadora
+	sched_enable_task(task_id); // task_id es el id de la tarea llamadora, la del ebx
 	sched_disable_task(task_6_id); 
 	task_reset(task_6_id); 
 }
@@ -99,6 +102,8 @@ void task_6 () {
 ```
 
 ### Inciso D
+
+- d. Mostrar un pseudo-código de la función sched_next_task para que funcione de acuerdo a las necesidades de este sistema.  
 
 Sería igual al del taller hecho en `sched.c` pero con MAX_TASKS siendo 6.  
 
