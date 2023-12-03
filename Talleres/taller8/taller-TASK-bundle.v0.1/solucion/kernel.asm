@@ -189,6 +189,7 @@ modo_protegido:
     ltr ax
 
     call sched_init
+    
     call tasks_init
 
     ; El PIT (Programmable Interrupt Timer) corre a 1193182Hz.
