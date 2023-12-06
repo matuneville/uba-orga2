@@ -79,8 +79,9 @@ _isr99:
 
     mov eax, [esp + 0] ; agarro EDI
     mov ebx, [esp + 4] ; agarro ESI
-
     mov ecx, cr3
+
+    ; tengo que chequear quien esta llamando a la interrupcion !! si no es la tarea 1, termino
 
     push eax
     push ebx
@@ -101,15 +102,15 @@ Usaré la función `void copy_page(paddr_t dst_addr, paddr_t src_addr)` del tall
 void CopiarPagina(uint32_t id, vaddr_t v_dir, uint32_t cr3){
     // tengo que pasar la dirección virtual de tarea parametro y la mia, ambas en v_dir, a direccion logica
     paddr_t phy_task1 = VirtualToPhy(1, v_dir, cr3);
-    paddr_t phy_taskSrc = VirtualToPhy(id, v_dir, cr3);
+
+    uint32_t cr3_task = getTSS(id).cr3;
+    paddr_t phy_taskSrc = VirtualToPhy(id, v_dir, cr3_task);
 
     copy_page(phy_task1, phy_taskSrc);
 }
 
 
 paddr_t VirtualToPhy(uint32_t id_task, vaddr_t v_dir, uint32_t cr3){
-    uint16_t task_sel = sched_tasks[id_task].selector;
-    uint32_t task_gdt_id = task_sel >> 3;
 
     gdt_entry_t gdt_entry = get_gdt_entry(id_task);
     uint32_t base = gdt_entry.base_low | (gdt_entry.base_middle << 16) | (gdt_entry.base_high << 24);
@@ -122,6 +123,25 @@ paddr_t VirtualToPhy(uint32_t id_task, vaddr_t v_dir, uint32_t cr3){
 
     return phy_page;
 }
+
+paddr_t VirtualToPhy(uint32_t id_task, vaddr_t v_dir, uint32_t cr3){
+    // Primero, necesitamos obtener la entrada de la GDT para la tarea
+    gdt_entry_t gdt_entry = get_gdt_entry(id_task);
+
+    // Luego, calculamos la dirección lineal sumando la base de la GDT y la dirección virtual
+    uint32_t base = gdt_entry.base_low | (gdt_entry.base_middle << 16) | (gdt_entry.base_high << 24);
+    uint32_t linear_address = base + v_dir;
+
+    // Ahora, necesitamos obtener la entrada del directorio de páginas y la tabla de páginas
+    pd_entry_t* pd = (pd_entry_t*) cr3; // apunta al principio del directorio de páginas
+    pt_entry_t* pt = (pt_entry_t*) pd[linear_address.dir]; // obtenemos la entrada a la tabla con linear_address.dir, que nos da los 10 bits altos
+
+    // Finalmente, calculamos la dirección física de la página
+    paddr_t phy_page = (pt[linear_address.table] << 12) + linear_address.offset;
+
+    return phy_page;
+}
+
 ```    
 
 
