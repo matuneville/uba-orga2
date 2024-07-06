@@ -1,0 +1,23 @@
+# Ignorar archivos objeto (.o y ejecutables)
+*.o
+*.exe
+*.out
+*.so
+*main
+*tester
+*.d
+*.bin
+*.bin.elf
+*.sym
+*.img
+
+*.idea
+
+.gdb_history
+Talleres/taller_02/ejC2-bundle.v0.1/tests_classify_chars
+Talleres/taller_02/ejC2-bundle.v0.1/tests_contar_espacios
+Talleres/taller_02/ejC2-bundle.v0.1/tests_lista_enlazada
+Talleres/taller_02/ejC2-bundle.v0.1/tests_vector
+
+Talleres/taller_04/simd-bundle.v0.2/src/build/bmpdiff
+Talleres/taller_04/simd-bundle.v0.2/src/build/simd
