@@ -1,0 +1,43 @@
+1- 
+    Para dos tareas, querremos:
+        - 2 TSS Descriptors en la GDT
+        - 2 TSS
+        - 2 Page Table Directories con sus Page Tables mapeadass
+        - 1 Task Register que nos de info sobre la tarea actual
+        - 1 Scheduler
+        - 250ml de leche descremada
+
+2- 
+    Se refiere al almacenamiento del snapshot de la tarea actual y el restablecimiento de los registros de la tarea a la que saltamos
+    El TR es el task register que guarda el selector para encontrar la tss en la gdt y la base adress y el segment limit para esa tss junto con sus atributos.
+
+
+3-
+    Para el primer cambio de contexto, inicializa y configura el TSS, carga su selector en el registro TR con ltr, y realiza un jmp far al selector de la primera tarea.
+    Si no hay tareas disponibles, usa una tarea inactiva (idle task) que pueda ser interrumpida y opcionalmente ponga el procesador en modo de bajo consumo con hlt.
+
+4
+    El Scheduler es el programa encargado de intercambiar las tareas a realizar en base a un intervalo de tiempo. Si una tarea no finaliza, se encarga de suspenderlas. 
+    Con que tiene una politica, nos referimos a que realiza este intercambio no solo de acuerdo al orden, sino tambien con un sistema de prioridades.
+
+5-  
+    Hace uso del clock para que las tareas parezcan ejecutarse en simultaneo aunque en realidad esta alternando entre las tareas.
+
+11-
+    a. en cada tic de reloj se ejectua toda la rutina de atencion de interrupcion.
+    b. 48bits. te dice a donde tiene que saltar para ir a la sgte tarea. uno seria el selector y otro el offset. el offset no tiene ningun efecto.
+    
+    c.Se carga en el procesador el contexto de la tarea. En el siguiente ciclo de clock, se resume la ejecucion de esta tarea devolviendo el EIP a la instruccion previa (es decir, en la instruccion siguiente a la ultima que fue ejecutada antes de ser suspendida o la primer instruccion en el caso de que la tarea fue recien agregada)
+    
+
+12-
+    La funcion lo que hace es recorrer la lista de tareas del scheduler, y, o bien encuentra una que es ejecutable (la primera encontrada) y luego pone a ejecutar esa, o bien termina de recorrerlo sin exito, y continua con la tarea Idle.
+
+
+14-
+    a- Lo que hace tss_gdt_entry_for_task es tomar la direccion donde se encuentra la nueva TSS de la tarea creada (que se encuentra en el array de TSSs) y devuelve el descriptor que corresponde a la GDT
+    b- Porque toma como parametro el selector de segmento, que corresponde con el indice en GDT shifteado left 3 veces (los primeros 2 bits son RPL y el tercero es 0=GDT)
+
+
+15-
+    Utiliza funciones para comunicarse con el kernel, como syscall_draw o task_sleep

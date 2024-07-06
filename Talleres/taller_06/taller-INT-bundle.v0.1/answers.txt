@@ -1,0 +1,5 @@
+1. A.
+    - Offset: la dirección de memoria donde comienza la rutina de atención de interrupción.
+    - Segment selector: indica qué selector debe utilizarse al ejecutar el código de la rutina.
+    - P,DPL: indican si la rutina se encuentra en memoria o no y el nivel de privilegio, respectivamente.
+    - Bits 8 a 12: indican el tipo específico de la compuerta de interrupción, el bit D indica si es una compuerta de 32 o 16 bits. 

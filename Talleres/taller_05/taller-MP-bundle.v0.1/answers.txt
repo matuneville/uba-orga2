@@ -1,0 +1,33 @@
+
+1-  
+    Modo real: es el modo de operacion que provee el ambiente de programacion del Intel 8086 con algunas extensiones, como la habilidad de cambiar al modo protegido. Trabaja en 16b, direcciona hasta 1MB de memoria, tiene limitados modos de direccionamiento, no tiene proteccion de memoria ni niveles de privilegio
+
+    Modo protegido: es el modo de operacion nativo del procesador, que provee un gran set de caracteristicas de la arquitectura,flexibilidad, alto rendimiento y compatibilidad para los softwares antiguos. Direcciona hasta 4GB, tiene 4 niveles de proteccion de privilegios, puede tener interrupciones de rutinas con privilegios
+
+
+2-
+    Asegurar la proteccion de memoria y la gestion de la misma, poder acceder a más espacio de memoria y definir tareas segun niveles de proivilegios son los principales motivos por los cuales debemos hacer el pasaje de un modo a otro.
+    Un SO en modo real tendria mayores limitaciones debido a sus caracteristicas ya comentadas.
+
+3-
+    La GDT es una tabla de descriptores de segmento, basicamente un array de los mismos.
+    Un segment descriptor tiene en 32 bits:
+        - bits 0-15: el limite del segmento (offset limite) 00:15
+        - bits 16-31: base de la direccion 00:15
+    En sus siguientes 32 bits:
+        - bits 0-7: base de la direccion 16:23
+        - bits 8-11: Type, tipo de segmento
+        - bit 12: S, tipo de descriptor (0=system, 1=code/data)
+        - bits 13-14: DPL, nivel de privilegio del descriptor
+        - bit 15: P, segmento presente
+        - bits 16:19: limite del segment (offset limite) 16:19
+        - bit 20: AVL, disponible libremente
+        - bit 21: L, si usa 32 o 64bits el set de intrucciones
+        - bit 22: D/B, tamaño de operacio  default (0=segmento de 16b, 1=32b)
+        - bit 23: G, granularidad del segment limit (1 si se mide de a 4KB, 0 si se mide de a byte)
+        - bits 24:31: direccion de base 24:31
+
+4-
+    Seria el type 10 (0b1010)
+
+5-

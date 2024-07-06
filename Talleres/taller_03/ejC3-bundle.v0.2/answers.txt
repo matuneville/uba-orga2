@@ -1,0 +1,27 @@
+a)
+    La convencion de llamadas se refiere a cómo una función de C es llamada en assembly, teniendo en cuenta dónde se guardan los parámetros, returns, etc.
+
+    En 64 bits (x86-64), los primeros seis argumentos enteros o de puntero se pasan en los registros RDI, RSI, RDX, RCX, R8 y R9. Los primeros ocho argumentos de tipo flotante se pasan en los registros XMM0 a XMM7. Los argumentos adicionales se pasan en la pila. Los valores de retorno se devuelven en el registro RAX para los tipos enteros y en XMM0 para los tipos flotantes.
+
+    En 32 bits, se usa el mismo registro de retorno (EAX en 32 bits), pero los parametros vienen todos de la pila.
+
+b)
+    El compilador hace su trabajo. En assembly, es el programador quien debe cumplir con la convención.
+
+c)
+    El stack frame es un espacio del stack dedicado a cierta llamada. El prólogo es el principio del codigo assembly de la funcion en el que se hacen los pushs correspondientes, y el epilogo la parte final en la que se hacen los pops correspondientes.
+
+d)
+    Utilizacion del stack. 
+
+e)
+    A 16 Bytes. ¿¿??
+
+f)
+    - En assembly cambian los offsets para acceder a cada miembro
+    - Ahora cada registro segun el orden de la convencion tiene otras variables.
+    - Agrega ceros a la izquierda, solo alarga el tamaño. Antes el retorno tomaba AX, y ahora toma todo RAX
+    - Ahora RAX retorna algo
+    - No va a cambiar nada por que el float va a ser almacenado en el registro XMMO y el int en el registro RDI independientemente de su orden
+
+    - Lo que pasaria si se cambian los parametros es que nuestro programa va a usar mal estos, por ejemplo si quiero dividir a por b y me cambian los parametros me va a devolver b por aa, si cambian el tipo devuelto es posible que se rompa todo

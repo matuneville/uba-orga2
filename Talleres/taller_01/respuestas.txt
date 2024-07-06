@@ -1,0 +1,92 @@
+- **Ejercicio 1 (Intel 64 Entorno de ejecución):**
+    
+    a) ¿Cual es el tamaño en bits de una dirección de memoria en la arquitectura Intel 64 y cuál es la unidad mínima que
+    podemos direccionar?
+    
+    - El tamaño en bits de una dirección de memoria en la arquitectura Intel 64 es de 64 bits y la unidad mínima a la que podemos direccionar es 1 byte = 8 bits
+    
+    b) ¿Cuantos registros de propósito general hay en Intel 64 y que tamaño tienen? Pueden también consultar la sección
+    3.4.1.1 General Purpose Registers in 64-Bit Mode
+    
+    - en Intel 64 hay 16 registros de propósito general con un tamaño de 32 bits por defecto, aunque estos registros también son capaces de trabajar con operandos de 64 bits
+    
+    c) Busquen en el manual qué guarda el registro RIP (Instruction Pointer) e indiquen su tamaño en bits. ¿Por qué
+    motivo creen que el RIP tiene ese tamaño en bits?
+    
+    - El registro RIP guarda la dirección de memoria de la próxima instrucción que se ejecutará en el programa y su tamaño en bits es de 64. Creo que se eligió este tamaño ya que como las instrucciones son de este tamaño, de esta forma puedo guardarme la próxima instrucción entera sin importar su largo
+- **Ejercicio 2 (Flags):**
+    
+    a) Busquen en la sección del manual qué guarda el registro EFLAGS e indiquen su tamaño en bits.
+    
+    - Su tamaño es bits es de 32, esto lo podemos ver sin necesidad de ir al manual, ya que la E en el nombre del registro hace referencia a “extended” que nos dice que es un registro de 32 bits
+    
+    b) En el formato del registro, busquen los siguiente bits e indique para qué son y en qué posición del registro están
+    almacenados: Flag de Cero, Flag de Carry, Flag de Interrupciones.
+    
+    - Flag de Cero: el flag del cero indica una operación aritmética o lógica tiene como resultado cero, si es así, el valor del flag es 1. Este Flag se encuentra en la posición 6.
+    - Flag de Carry: el flag de Carry indica si al aplicar una operación aritmética, esta genera carry. Este Flag esta en el bit 0.
+    - Flag de interrupciones: controla la respuesta del procesador cuando a este le llega una interrupción. Este Flag es el bit 9.
+    
+    c) Indiquen si en la arquitectura Intel 64 se usa el mismo registro. En caso que sea otro, indiquen su tamaño y la
+    relación tendría con el de IA-32.
+    
+    - En ambas arquitecturas se utiliza el mismo registro.
+- **Ejercicio 3 (Stack y llamadas a función):**
+    
+    a) ¿Para qué es necesaria la pila? ¿Donde está ubicada?
+    
+    - La pila es un array de memoria ubicada en la parte inferior de la memoria, esta es necesaria para diferentes funciones, por ejemplo para guardar variables locales, si tenemos el llamado a alguna función, la pila se encarga de guardar la información hasta el momento, así cuando se vuelve de la función esta no se pierde
+    
+    a) ¿Para qué sirven los registros ESP y EBP?¿Que consideraciones debemos tener al trabajar con cada uno ellos?
+    
+    - El registro ESP es un registro que siempre apunta al ultimo elemento pusheado a la pila, así, cada vez que un elemento es pusheado al stack, el procesador decrementa el registro ESP y cuando se aplica un POP, el procesador incrementa el registro ESP para apuntar al ultimo elemento de la pila. El registro EBP es un registro que siempre apunta al primer elemento (primer elemento agregado) de la pila.
+    - Las consideraciones que debemos tener es cada vez que hacemos un POP o un PUSH tener en cuenta que la pila se va a modificar y mover los registros para que cumplan bien su función
+    
+    b) En el primer párrafo de la sección 6.2.4.2 Return Instruction Pointer, ¿Qué registro se pushea en la pila al
+    hacer un CALL?
+    
+    - Al hacer un CALL, antes de que esta instrucción haga el salto, guarda la dirección de memoria de retorno en el registro EIP/RIP, luego, a este lo pushea a la pila y luego de esto, el CALL hace el salto
+    
+    c) En el primer párrafo de la sección 6.2.4.2 Return Instruction Pointer, ¿Qué ocurre al hacer un RET?
+    
+    - Al volver de un procedimiento llamado, la instrucción RET extrae el puntero de la instrucción de retorno (guardada en el registro EIP/RIP) que esta almacenado en la pila para reanudar la ejecución del procedimiento
+    
+    d) En el segundo párrafo de la sección 6.2.4.2 Return Instruction Pointer, ¿Qué debe asegurarse el programador
+    antes de llamar a un RET cuando esta escribiendo una subrutina? ¿Cómo lo asegura?
+    
+    - El procesador no realiza un seguimiento del IP de retorno, depende del programador asegurarse de que el puntero de pila apunta al IP de retorno en la pila, antes de emitir una instrucción RET. Una manera de asegurarlo es cargar el puntero EBP con el valor de ESP al comienzo del procedimiento. Esto se hace para preservar el valor original de ESP y poder recuperarlo más tarde.  Para garantizar que ESP apunte a la dirección de retorno antes de un RET, el contenido de EBP se mueve a ESP antes de la instrucción RET. Esto asegura que ESP apunte a la dirección correcta en la pila para que RET pueda sacarla y continuar la ejecución desde allí.
+    
+    e) ¿Cuál es el ancho de la pila en modo 32 bits y en 64 bits? (tamaño del dato de PUSH y POP)
+    
+    - El ancho de la pila en modo 32 bits es de 32 bits, mientras que en el de 64 es de 64 bits
+    
+    f) Luego de responder las preguntan anteriores, discutan en grupo si el EBP podría ser usado para guardar datos que
+    no sean la base de la pila. ¿Qué opinan?
+    
+    - Si, el EBP podría ser usado para guardar datos en que no sean la base de la pila, pero no es recomendable,  ya que por convención guarda los datos de la base del stack, si necesitas guardar datos en un registro, hay 16 registros de propósito general para hacerlo
+    
+
+### Set de instrucciones IA-32 e Intel 64
+
+- Ejercicio 4 (set de instrucciones):
+    
+    Dados INC, SUB, XOR, JE, JZ
+    Expliquen con sus palabras
+    a) Observen el formato de la instrucción y respondan, ¿cuantos operandos recibe, de qué tipo son y qué tamaño
+    tienen?. Por ejemplo, 2 operandos de los tipo registro-registro de 8 a 64 bits, memoria-registro, memoria-memoria
+    
+    b) ¿Qué hace cada instrucción?
+    
+    - INC: Recibe un operando del tipo registro/memoria y lo incrementa en 1.
+    - SUB: toma 2 operandos, ambos pueden ser registros o memorias, el primer operando es el destino(donde se guarda el resultado) y el segundo operando es la fuente (es el valor a restar), además, este puede ser un inmediato
+    - XOR: La operación XOR (OR exclusivo) toma dos operandos y almacena el resultado en el primer operando, ambos pueden ser registros o memoria y el 2do operando puede ser un inmediato
+    - JE: Tiene un solo operando que es la dirección de destino a la cual va a saltar, este hace una comparacion antes y salta si el resultado es 0
+    - JZ: Tiene un solo operando que es la dirección de destino a la cual va a saltar, ese jump salta si la flag z esta en 1
+    
+    c) Den uno o más ejemplos de su uso (traten que varíen los operandos y tamaño de dato leído). Por ejemplo, SUB
+    EAX, 0x00000001 o ADD RAX, 1.
+    
+    d) ¿Qué diferencia existe entre JZ y JE?
+    La diferencia esta en que JZ salta si la flag Z esta en 1, en cambio JE hace una comparación antes y si esta comparación da 0, salta.
+    
+    JZ puede saltar por una operación aritmética por ejemplo, en cambio JE solo por la comparación

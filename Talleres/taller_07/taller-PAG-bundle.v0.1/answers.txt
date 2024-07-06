@@ -1,0 +1,88 @@
+1-
+    Hay 4 niveles: es el 0 es el mas privilegiado y el 3 el menos
+
+2-
+    1. Extraer el numero de directorio de paginas (PDE): Se extrae el numero de
+directorio de paginas de la direccion logica desplazandola 22 bits a la
+derecha. (bits 22-31)
+
+    2. Extraer el numero de tabla de paginas (PTE): Se extrae el numero de
+tabla de paginas de la direccion logica (bit 12 - 21)
+
+    3. Extraer el desplazamiento: Se extrae el desplazamiento de la direccion
+logica (bits 0-11)
+
+    4.Obtener la direccion base del directorio de paginas: Se obtiene la
+direccion base del directorio de paginas desde el registro CR3 aplicando una
+operacion AND con 0xFFFFF000 (asi discriminamos atributos).
+
+    5.Obtener la entrada del directorio de paginas: Se obtiene la entrada del
+directorio de paginas leyendo la memoria en la direccion que resulta de sumar
+la base del directorio de paginas y el PDE multiplicado por 4.
+
+    6.Comprobar si la entrada del directorio de paginas esta presente: Si el
+bit menos significativo de la entrada del directorio de paginas es 0, se lanza
+una excepcion de fallo de pagina (page fault).
+
+    7.Obtener la direccion base de la tabla de paginas: Se obtiene la direccion
+base de la tabla de paginas desde la entrada del directorio de paginas
+aplicando una operacion AND con 0xFFFFF000.
+
+    8.Obtener la entrada de la tabla de paginas: Se obtiene la entrada de la
+tabla de paginas leyendo la memoria en la direccion que resulta de sumar la
+base de la tabla de paginas y el PTE multiplicado por 4.
+
+    9.Comprobar si la entrada de la tabla de paginas esta presente: Si el bit menos
+significativo de la entrada de la tabla de paginas es 0, se lanza una excepcion
+de fallo de pagina (page fault).
+
+    10.Obtener la direccion base de la pagina: Se obtiene la direccion base de la
+pagina desde la entrada de la tabla de paginas aplicando una operacion AND con
+0xFFFFF000.
+
+    11. Obtener la direccion fisica: La direccion fisica es la suma de la base de la
+pagina y el desplazamiento
+
+
+3-
+    D: Dirty, Indica si se escribio a memoria controlada por esta
+
+    A: Accessed, : Indica si se accedio a memoria controlada por esta PTE. Lo escribe el procesador al traducir
+
+    PCD: (Page Cache Disable): Deshabilita cachear los datos de pagina asociada
+
+    PWT:  (Page Write-Through): Deshabilita hacer write-back cuando el procesador modifica la page table asociada
+
+    U/S: (User/Supervisor) Determina si un proceso en modo usuario puede acceder a la memoria controlada por esta PDE
+
+    R/W: (Read/Write): Determina si un proceso puede escribir a la memoria controlada por esta PDE
+
+    P: (Present): Es el bit 0 (siempre en uno), indica que esta traduccion es valida.
+
+
+4-
+    Si PTE y PDE difieren en Privilegio U/S, siempre queda el más restrictivo.
+    O sea, si ambos son User, queda User. Con que uno de ambos sea Supervisor, queda Supervisor.
+
+    Si U/S es User, queda el mas restrictivo (o sea, Read-Only). Luego, depende de CR0.WP
+
+
+5-
+    Tenemos 3 paginas para la tarea (2 de codigo, 1 de stack),
+    1 pagina para Directorio de Tablas de Paginas,
+    1 pagina para Tabla de Paginas (con 3 de sus 1024 descriptores mapeando a la tarea) 4096*1024*1024
+
+    O en vez de 3 para la tarea:
+    1 pagina para el stack
+    1 pagina para la tarea, luego al completarla, el SO le dara la faltante(o podria hacer un swap, pero no creo)
+
+
+7-
+    Para acelerar el proceso de traduccion el procesador cuenta con una cache de traducciones tabla de traducciones comunmente
+    llamada translation lookaside buffer. Cuando modifiquemos las estructuras de paginacion es importante invalidar esta cache,
+    de lo contrario podriamos seguir observando traducciones invalidas. Una forma de hacerlo es escribiendo en el registro CR3.
+    Hay formas mas sofisticadas (miren invlpg) pero mov eax, cr3 seguido de mov cr3, eax es suficiente para nosotros. En el taller
+    la rutina de invalidacion ya esta escrita y se llama tlbflush.
+    Como no hay free, cuando un programa no necesita mas una pagina, en vez de hacer un free, lo que hacemos es que el programa
+    no pueda acceder mas a esa pagina, de esta forma no permitimos que pueda ver basura.
+    
