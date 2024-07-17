@@ -194,11 +194,13 @@ _isr14:
     call kernel_exception
     add esp, 10*4
     popad
+    add esp, 4
 
     jmp $
   .fin:
     add esp, 10*4
     popad
+    add esp, 4 ; exception number
 	  add esp, 4 ; error code
 	  iret
 

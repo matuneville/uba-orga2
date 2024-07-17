@@ -12,7 +12,7 @@ void task(void) {
 	// ¿Una tarea debe terminar en nuestro sistema? Rta: no xD
 	while (true){
 		// Completar:
-		uint32_t y = (HEIGHT/2)-1;
+		uint32_t y = 5;
 		
 		for(uint8_t task_id = 0; task_id < CANT_PONGS; task_id++){
 			// - Pueden definir funciones auxiliares para imprimir en pantalla

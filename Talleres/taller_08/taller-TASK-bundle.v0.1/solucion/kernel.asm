@@ -72,7 +72,7 @@ start:
     xor bx, bx
     mov ax, 1112h
     int 10h ; load 8x8 font
-
+tss_gdt_entry_for_task
     ; Imprimir mensaje de bienvenida - MODO REAL
     ; (revisar las funciones definidas en print.mac y los mensajes se encuentran en la
     ; sección de datos)
